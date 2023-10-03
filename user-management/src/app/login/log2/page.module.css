@@ -1,0 +1,95 @@
+.loginBG{
+    align-items: center;
+    background-color: #fdc731;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loginCard{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    border-radius: 14px;
+    height: 50vh;
+    width: 85vw;
+    padding: 14px;
+    flex-flow: column;
+    color:black;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    border-style: none;
+    box-shadow: 8px 8px rgb(0, 0, 0);
+}
+
+.txtField{
+    background-color: #fdc73165;
+    color: black;
+    width: 80%;
+    padding: 10px;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    border-style: none;
+    margin: 4px;
+}
+
+.loginButton{
+    background-color: black;
+    padding: 12px;
+    margin: 4px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border-style: none;
+    border-radius: 12px;
+    color: #fdc731;
+    width: 40%;
+    margin-top: 2rem;
+    box-shadow: 4px 4px #fdc731;
+}
+
+.loginButton:active{
+    margin-left: 8px;
+    margin-top: 32px;
+    box-shadow: 2px 2px #fdc731;
+}
+
+@media screen and (min-width: 800px){
+    .loginCard{
+        width: 55vw;
+    }
+
+    
+    .txtField{
+        background-color: #fdc73165;
+        color: black;
+        width: 80%;
+        padding: 14px;
+        font-size: 1.1rem;
+        border-radius: 12px;
+        border-style: none;
+        margin: 6px;
+    }
+
+
+    .loginButton{
+        background-color: black;
+        padding: 14px;
+        margin: 4px;
+        font-size: 1.1rem;
+        font-weight: bold;
+        border-style: none;
+        border-radius: 12px;
+        color: #fdc731;
+        width: 40%;
+        margin-top: 2rem;
+        box-shadow: 8px 8px #fdc731;
+    }
+
+    .loginButton:active{
+        box-shadow: 4px 4px #fdc731;
+    }
+
+} 
+

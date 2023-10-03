@@ -1,0 +1,18 @@
+{
+  "doc1": {
+    "public": 1,
+    "name": "Shree Radhe",
+    "age": 16,
+    "gender": "Female",
+    "title": ["Radha Rani", "Laadli", "Bhagwaan"],
+    "lastUpdated": ""
+  },
+  "doc2": {
+    "public": 2,
+    "name": "Krishn Kanhaiya",
+    "age": 16,
+    "gender": "Male",
+    "title": ["Bhagwaan", "Laddu Gopal", "Kanhaiya"],
+    "lastUpdated": ""
+  }
+}

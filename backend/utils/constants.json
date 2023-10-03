@@ -1,0 +1,21 @@
+{
+    "loginCookies": {
+        "loginToken": "logToken",
+        "publicEncryptionKey": "enKey",
+        "userId": "userId"
+    },
+
+    "backendUrl": "http://localhost:3100",
+    "frontendUrl": "http://localhost:3000",
+
+    "requestRoutes": {
+        "login": "/login",
+        "generateLoginKey": "/gen-login/key",
+        "addUser": "/addUser",
+        "removeUser": "/removeUser",
+        "updateUser": "updateUser",
+        "verifyLoginCookies": "/verifyLogin",
+        "logout": "/logout"
+    }
+
+}

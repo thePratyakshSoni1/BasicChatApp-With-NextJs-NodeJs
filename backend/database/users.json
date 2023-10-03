@@ -1,0 +1,34 @@
+[
+  {
+    "userId": "mymail@gmail.com",
+    "password": "SEETA-RAM",
+    "loginToken": "asmopadsmomaodsim",
+    "publicKey": 5,
+    "mod" : 7289,
+    "privateKey": 1234
+  },
+  {
+    "userId": "radhakrishn@gmail.com",
+    "password": "RADHE-RADHE",
+    "loginToken": "sdak89asdj",
+    "publicKey": 5,
+    "mod" : 7289,
+    "privateKey": 1234
+  },
+  {
+    "user": "rada-krishnmail@outlook.com",
+    "password": "radhe radhe",
+    "loginToken": "skjdah78234hkjh",
+    "publicKey": 5,
+    "mod" : 7289,
+    "privateKey": 1234
+  },
+  {
+    "userId": "seeta-ram-nmail@outlook.com",
+    "password": "Jai Seeta Ram",
+    "loginToken": "fsajdauy873",
+    "publicKey": 5,
+    "mod" : 7289,
+    "privateKey": 1234
+  }
+]
