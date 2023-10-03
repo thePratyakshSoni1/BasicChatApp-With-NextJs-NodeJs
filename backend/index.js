@@ -11,8 +11,17 @@ const {
   addLoginCookiesToResponse,
   verifyLoginCookies,
 } = require("./repository/cookiesRepo");
+const file = require("fs")
 
 var myKeys = setKeys(generatePrimeNums());
+let serverValues = JSON.parse(file.readFileSync("./serverValues.json"))
+let updatedValues = serverValues.loginKeys = {
+  modulous: myKeys.mod,
+  publicKey: myKeys.public,
+  privateKey: myKeys.private
+}
+file.writeFileSync("./serverValues.json", JSON.stringify({loginKeys: updatedValues}))
+
 
 const httpServer = http.createServer(async (req, res) => {
   if (!handleCors(req, res)) {
@@ -34,7 +43,6 @@ const httpServer = http.createServer(async (req, res) => {
         break;
 
       case requestRoutes.login:
-        console.log("Food received: ", req.headers);
         let jsonData = JSON.parse(`{}`);
         req.on("data", (chunk) => {
           jsonData = JSON.parse(`${chunk}`);

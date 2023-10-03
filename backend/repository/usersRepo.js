@@ -50,7 +50,6 @@ function getUser(relPathToUsersJsonFile, userId){
   
     dataRead.forEach((it) => {
       if (it.userId === userId) {
-        console.log("returning user: ",it)
         resp = {fetchStatus: "success", userData: it}
       }
     });

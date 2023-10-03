@@ -21,12 +21,12 @@ export default async function getServerSideProps() {
     isLoggedUser = (cookies?.includes("userId") && cookies?.includes("logToken") && cookies?.includes("enKey")) ? true : false
     console.log(isLoggedUser)
 
-    // if (isLoggedUser) {
-    //     let verificationResp = await verifyAutoLogin(cookies ? cookies : "")
-    //     if (verificationResp.isVerified) {
-    //         isAuthenticated = true
-    //     }
-    // }
+    if (isLoggedUser) {
+        let verificationResp = await verifyAutoLogin(cookies ? cookies : "")
+        if (verificationResp.isVerified) {
+            isAuthenticated = true
+        }
+    }
 
     if (!isAuthenticated) {
         const opts = {
@@ -38,7 +38,7 @@ export default async function getServerSideProps() {
         try {
             var clientRq = http.request(opts, (res) => {
                 res.on("data", (chunk) => {
-                    key = chunk
+                    key = chunk.toString()
                     console.log(">>> Received Login-Gen-Key:\n", key)
                     isRequestComplete = true
                     isEncRequestComplete = true
@@ -50,15 +50,15 @@ export default async function getServerSideProps() {
             })
 
             clientRq.end()
-            let delayLimit = 300*1000 
+            let delayLimit = 10*1000 
             const sleepNow = (delay: number) => new Promise((resolve) => setTimeout(resolve, delay))
 
             const checkRequestStatus = async () => {
                 let i = 0
                 while (!isRequestComplete && delayLimit > 0) {
                     await sleepNow(100)
-                    console.log(`>>> waiting... ${i++}`)
-                    delayLimit = delayLimit-1000
+                    console.log(`>>> waiting... ${i++}, ${delayLimit}`)
+                    delayLimit = delayLimit - 1000
                 }
             }
             await checkRequestStatus()

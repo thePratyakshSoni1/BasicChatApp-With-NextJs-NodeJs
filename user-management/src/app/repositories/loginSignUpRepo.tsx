@@ -1,14 +1,17 @@
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context";
+import { encryptData } from "./cryptographyRepo";
 
 export async function onLogin(
     headers: Headers,
     mailTxt: string,
     password: string,
     router: AppRouterInstance,
+    key:number,
+    mod:number,
     setError: (msg: string) => void
 ) {
 
-    let data = JSON.stringify({ mail: mailTxt, password: password })
+    let data = JSON.stringify({ mail: encryptData(mailTxt, key, mod), password: encryptData(password, key, mod) })
     headers.append('Content-Type', 'application/json')
     headers.append('Content-Length', `${JSON.stringify(data).length}`)
 

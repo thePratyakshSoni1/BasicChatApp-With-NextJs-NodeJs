@@ -8,11 +8,11 @@ import { useRouter } from "next/navigation"
 import Script from "next/script"
 import { onLogin } from "../repositories/loginSignUpRepo"
 
-function ErrorComponent(item: { msg: string }) {
-    if (item.msg !== "") {
-        return <p>{item.msg}</p>
-    }
-}
+// function ErrorComponent(item: { msg: string }) {
+//     if (item.msg !== "") {
+//         return <p>{item.msg}</p>
+//     }
+// }
 
 export default function LoginPage(myKeys: { myKeys: { public: number, mod: number }, food: string | null }) {
 
@@ -26,7 +26,7 @@ export default function LoginPage(myKeys: { myKeys: { public: number, mod: numbe
             <div className={styles.loginCard}>
 
                 <h1>Welcome</h1>
-                <h6>{error}</h6>
+                <h6 style={{color: "red"}}>{error}</h6>
                 <br></br>
 
                 <input type="text" placeholder="email@gmail.com"
@@ -41,14 +41,17 @@ export default function LoginPage(myKeys: { myKeys: { public: number, mod: numbe
                         setPasswordTxt(n.target.value)
                     }} />
 
-                <ErrorComponent msg={error} />
-
                 <button className={styles.loginButton} onClick={() => {
-                    onLogin(new Headers(), mailTxt, password, router, setError)
+                    onLogin(
+                        new Headers(),
+                        mailTxt, password, router,
+                        myKeys.myKeys.public, myKeys.myKeys.mod,
+                        setError
+                    )
                 }}> LogIn</button>
 
             </div>
         </div >
-        {/* <Script src="/deleteCredentials.js" /> */}
+        <Script src="/deleteCredentials.js" />
     </>
 }

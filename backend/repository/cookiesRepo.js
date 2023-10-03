@@ -46,8 +46,6 @@ function verifyLoginCookies(cookies) {
     }
   });
 
-  console.log(">> verifyLogin User: ", user);
-
   if (user != "" && user) {
     isAuthenticUser = enKey == user.publicKey && logToken === user.loginToken;
     if (isAuthenticUser) return { isVerified: true };

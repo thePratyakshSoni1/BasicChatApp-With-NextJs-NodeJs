@@ -167,6 +167,16 @@ function main(){
 function base64ToBytes(b64){
     var txtDecoder = new TextDecoder()
     const binString = atob(b64)
+
+    let test = new Uint8Array(b64.length)
+    // for(let i=0;i<binString.length; i++){
+    //     test[i] = binString.codePointAt(i)
+    // }
+    // console.log("Loop Tech: ", test)
+    // console.log("MapFun Tech: ", Uint8Array.from(binString, (m)=>{
+    //     return m.codePointAt(0)
+    // }))
+
     return txtDecoder.decode(Uint8Array.from(binString, (m)=>{
         return m.codePointAt(0)
     }))
@@ -184,11 +194,29 @@ function bytesToBase64(bytes){
 
 
 
-//   // Usage
-//   let dd = bytesToBase64(new TextEncoder().encode("Hello My Friend")); // "YSDEgCDwkICAIOaWhyDwn6aE"
-//   let md = new TextDecoder().decode(base64ToBytes(dd)); // "a Ā 𐀀 文 🦄"
-//   console.log(md)
+  // Usage
+  let dd = bytesToBase64("!@#$%^&*(){}_=[]Hello My = Friend"); // "YSDEgCDwkICAIOaWhyDwn6aE"
+  let md = (base64ToBytes(dd)); // "a Ā 𐀀 文 🦄"
+  console.log(dd)
+  console.log(md)
 
 // main()
 
-module.exports = {generatePrimeNums, setKeys, encrypt, decrypt, encode, decode}
+function encryptData(data, publicKey, mod){
+    return bytesToBase64(encode(data, publicKey, mod).toString())
+}
+
+function decryptData(data, privateKey, mod){
+    let dataString = base64ToBytes(data)
+    let buffer = dataString.substring(0, dataString.length).split(",").map(it=>{
+        return parseInt(it)
+    })
+    return decode(buffer, privateKey, mod)
+}
+
+// let k = setKeys(generatePrimeNums())
+// let encMsg = encryptData("Radhe Radhe", k.public, k.mod)
+// let dencMsg = decryptData(encMsg, k.private, k.mod)
+// console.log("-------\nResults:\n",encMsg,"\n",dencMsg,"\n--------")
+
+module.exports = {generatePrimeNums, setKeys, encryptData, decryptData}

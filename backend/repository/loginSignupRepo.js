@@ -1,11 +1,13 @@
-const { deleteAllLoginCookies } = require("./cookiesRepo");
 const { getUser } = require("./usersRepo")
-
+const { decryptData } = require("../rsaGo")
+const file =  require("fs")
 function verifyLoginCredentials(pathToUserData ,userId, password){
-  let user = getUser(pathToUserData, userId)
+
+  let loginKeys = JSON.parse(file.readFileSync("./serverValues.json")).loginKeys
+  let user = getUser(pathToUserData, decryptData(userId, loginKeys.privateKey, loginKeys.modulous))
   let isAuthenticated = false
   if(!user.error){
-    isAuthenticated = (password === user.userData.password)
+    isAuthenticated = ( decryptData(password, loginKeys.privateKey, loginKeys.modulous) === user.userData.password)
   }
   return isAuthenticated
 }
