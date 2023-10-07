@@ -1,9 +1,6 @@
 "use client"
 import React from "react"
 import styles from "./log2/page.module.css"
-import http from "http"
-import fun from "../../../../backend/rsaGo"
-import { headers } from "next/headers"
 import { useRouter } from "next/navigation"
 import Script from "next/script"
 import { onLogin } from "../repositories/loginSignUpRepo"
@@ -21,12 +18,14 @@ export default function LoginPage(myKeys: { myKeys: { public: number, mod: numbe
     const [error, setError] = React.useState("")
     const router = useRouter()
 
+
+
     return <>
         <div className={styles.loginBG}>
             <div className={styles.loginCard}>
 
                 <h1>Welcome</h1>
-                <h6 style={{color: "red"}}>{error}</h6>
+                <h6 style={{ color: "red" }}>{error}</h6>
                 <br></br>
 
                 <input type="text" placeholder="email@gmail.com"

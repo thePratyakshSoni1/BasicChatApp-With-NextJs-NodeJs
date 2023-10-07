@@ -1,7 +1,8 @@
 const { loginCookies } = require("../utils/constants.json");
 const { getUser } = require("./usersRepo")
+const { decryptData } = require("../rsaGo")
 
-function addLoginCookiesToResponse(logToken, userId, enKey, response) {
+function addLoginCookiesToResponse(logToken, userId, enKey, mod, response) {
   let loginSessionWeekLimit = 4; //weeks
   let milliSecondsInWeek = 1000 * 60 * 60 * 24 * 7; // seconds in a week
   let currentDate = new Date()
@@ -14,6 +15,9 @@ function addLoginCookiesToResponse(logToken, userId, enKey, response) {
       (new Date( currentDate.getTime() + (milliSecondsInWeek * loginSessionWeekLimit))).toUTCString()
     }; path=/; httpOnly;`,
     `${loginCookies.publicEncryptionKey}=${enKey}; expires=${
+      (new Date( currentDate.getTime() + (milliSecondsInWeek * loginSessionWeekLimit))).toUTCString()
+    }; path=/; httpOnly;`,
+    `${loginCookies.mod}=${mod}; expires=${
       (new Date( currentDate.getTime() + (milliSecondsInWeek * loginSessionWeekLimit))).toUTCString()
     }; path=/; httpOnly;`,
   ]);
@@ -33,6 +37,10 @@ function verifyLoginCookies(cookies) {
   let logToken = "";
   let enKey = 0;
   let isAuthenticUser = false;
+
+  const file = require("fs")
+
+  const { loginKeys } = JSON.parse(file.readFileSync("./serverValues.json"))
 
   cookies.forEach((element) => {
     if (element.split("=")[0] === "userId") {
@@ -57,8 +65,22 @@ function verifyLoginCookies(cookies) {
   }
 }
 
+function extractCookiesFromReq(cookieString){
+  var cookieReceived = {}
+  if(cookieString){
+    cookieString.split("; ").forEach(it=>{
+      cookieReceived[it.split("=")[0]] = it.split("=")[0]
+    })
+    return cookieReceived
+  }else{
+    return undefined
+  }
+}
+
 module.exports = {
   deleteAllLoginCookies,
   addLoginCookiesToResponse,
   verifyLoginCookies,
+  extractCookiesFromReq
+
 };

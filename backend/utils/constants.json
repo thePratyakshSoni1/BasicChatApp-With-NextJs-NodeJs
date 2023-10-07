@@ -2,7 +2,8 @@
     "loginCookies": {
         "loginToken": "logToken",
         "publicEncryptionKey": "enKey",
-        "userId": "userId"
+        "userId": "userId",
+        "mod": "mod"
     },
 
     "backendUrl": "http://localhost:3100",
@@ -15,7 +16,9 @@
         "removeUser": "/removeUser",
         "updateUser": "updateUser",
         "verifyLoginCookies": "/verifyLogin",
-        "logout": "/logout"
+        "logout": "/logout",
+        "peoples": "/peoples",
+        "getTextHistory": "/textHistory"
     }
 
 }

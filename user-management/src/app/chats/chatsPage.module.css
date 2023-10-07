@@ -1,0 +1,74 @@
+.hompageUi {
+    background-color: white;
+}
+
+.chatList {
+    background-color: #3700ff8c;
+    width: 100vw;
+    height: 100vh;
+}
+
+.chatItem {
+    width: 100%;
+    color: black;
+    font-weight: bold;
+    font-size: 1rem;
+    display: flex;
+    flex-flow: row;
+    align-items: center;
+    padding: 12px;
+    margin: 2px;
+    background-color: white;
+}
+
+.chatItem p {
+    font-weight: normal;
+    color: rgb(51, 51, 51);
+    font-size: 0.6rem
+}
+
+.chatItem img {
+    border-radius: 100px;
+    width: 2rem;
+    height: 2rem;
+    margin-right: 14px;
+}
+
+.topBar {
+    background-color: #fdc731;
+    color: white;
+    min-height: 7rem;
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    flex-wrap: nowrap;
+}
+
+.topBar p {
+    font-size: 1.5rem;
+    background-color: white;
+    color: black;
+    padding: 4px 12px;
+    width: fit-content;
+    border-radius: 100px;
+    margin: 0px 12px;
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard syntax */
+}
+
+.topBar p:active{
+    border-style: dashed;
+    border-width: 1px;
+    color: black;
+    margin: 0px 11px;
+}
+
+@media screen and (min-width: 800px) {
+
+    .chatList {
+        width: max-content;
+        padding-right: 12px;
+    }
+
+}

@@ -1,15 +1,16 @@
 const http = require("http");
-const { setKeys, generatePrimeNums, decode } = require("./rsaGo");
+const { setKeys, generatePrimeNums, decode, decryptData } = require("./rsaGo");
 const { AuthRequest } = require("./authenticateReques");
 const { getUserMessages } = require("./UserMessagesRepo");
-const { addUser } = require("./repository/usersRepo");
+const { addUser, getChatPeoples, getTextHistory, getUser } = require("./repository/usersRepo");
 const { handleCors } = require("./corsRequestHandler");
-const { requestRoutes } = require("./utils/constants.json");
+const { requestRoutes, loginCookies } = require("./utils/constants.json");
 const { verifyLoginCredentials } = require("./repository/loginSignupRepo");
 const {
   deleteAllLoginCookies,
   addLoginCookiesToResponse,
   verifyLoginCookies,
+  extractCookiesFromReq,
 } = require("./repository/cookiesRepo");
 const file = require("fs")
 
@@ -29,6 +30,8 @@ const httpServer = http.createServer(async (req, res) => {
     console.log(">>> Origin:", req.headers.origin);
     console.log("Received Cookies: ", req.headers.cookie);
 
+    let cookiesReceived = extractCookiesFromReq(req.headers.cookie)
+
     switch (req.url) {
       case requestRoutes.addUser:
         var chunk = "";
@@ -41,6 +44,18 @@ const httpServer = http.createServer(async (req, res) => {
 
         res.end(JSON.stringify({ status: "OK" }));
         break;
+
+        case "testCase":
+          var chunk = "";
+          var receivedData = JSON.parse("{}");
+          req.on("data", (packet) => {
+            chunk += packet;
+            receivedData = JSON.parse(packet);
+            res.end(JSON.stringify({pong: receivedData}))
+          });
+  
+          res.end(JSON.stringify({ status: "OK" }));
+          break;
 
       case requestRoutes.login:
         let jsonData = JSON.parse(`{}`);
@@ -55,10 +70,14 @@ const httpServer = http.createServer(async (req, res) => {
               jsonData.password
             )
           ) {
+            var { loginKeys } = JSON.parse(file.readFileSync("./serverValues.json"))
+            var reqUser = getUser("./database/users.json", decryptData(jsonData.mail, loginKeys.privateKey, loginKeys.modulous))
+            console.log("Requested: ",reqUser)
             addLoginCookiesToResponse(
-              "asmopadsmomaodsim",
-              "mymail@gmail.com",
-              5,
+              reqUser.userData.loginToken,
+              decryptData(jsonData.mail, loginKeys.privateKey, loginKeys.modulous),
+              reqUser.userData.publicKey,
+              reqUser.userData.mod,
               res
             );
             res.end(JSON.stringify({ isSuccess: true, status: "success" }));
@@ -69,12 +88,9 @@ const httpServer = http.createServer(async (req, res) => {
         break;
 
       case requestRoutes.verifyLoginCookies:
-        let cookies = "";
-        cookies = req.headers.cookie.split("; ");
-        console.log("food", cookies);
 
-        if (req.headers.cookie) {
-          let cookieVerResp = verifyLoginCookies(cookies);
+        if (cookiesReceived) {
+          let cookieVerResp = verifyLoginCookies(req.headers.cookie.split("; "));
           if (cookieVerResp.isVerified) {
             res.end(JSON.stringify(cookieVerResp));
           } else {
@@ -101,24 +117,39 @@ const httpServer = http.createServer(async (req, res) => {
         res.end(JSON.stringify(datToBeSent));
         break;
 
-      case "/messages":
-        var reqData = "";
-        req.on("data", (chunk) => {
-          reqData += chunk;
-          let jsonParsed = JSON.parse(reqData);
-          if (AuthRequest(jsonParsed.mail, jsonParsed.password)) {
-            res.writeHead(200, { "Content-Type": "application/json" });
-            res.end(JSON.stringify(getUserMessages(jsonParsed.mail)));
-          } else {
-            res.writeHead(200, { "Content-Type": "application/json" });
-            res.end(
-              JSON.stringify({
-                title: "Bad Request",
-                message: "User not authenticated, try login again",
-              })
-            );
+      case requestRoutes.peoples:
+        var cookies = []
+        cookies = req.headers.cookie.split("; ");
+        
+        console.log("food", cookies);
+        if(req.headers.cookie && verifyLoginCookies(cookies).isVerified){
+          res.end(JSON.stringify(getChatPeoples("./database/users.json", cookiesReceived.userId )))
+        }else{
+          res.end(JSON.stringify({msg: "Sorry, it's a private api :)"}))
+        }
+
+        break;
+
+      case requestRoutes.getTextHistory:
+        var cookies = []
+        cookies = req.headers.cookie.split("; ")
+        console.log("food: ", cookies)
+        let userId = ""
+        cookies.forEach(it => {
+          if(it.split("=")[0] === loginCookies.userId){
+            userId = it.split("=")[1]
           }
         });
+
+        if(req.headers.cookie && verifyLoginCookies(cookies).isVerified){
+          req.on("data", (chunk)=>{
+            let reqParams = JSON.parse(chunk.toString())
+            res.end(JSON.stringify( getTextHistory(userId, reqParams.recepient, "./database/userData.json") ))
+          })
+        }else{
+          res.end(JSON.stringify({msg: "Sorry, it's a private api :)"}))
+        }
+
         break;
 
       case requestRoutes.logout:

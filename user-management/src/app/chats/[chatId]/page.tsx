@@ -1,9 +1,13 @@
 import { headers } from "next/headers"
 import ChatPage from "./chatPageUi"
-import { verifyAutoLogin } from "../repositories/loginSignUpRepo"
-import { redirect } from "next/navigation"
+import { verifyAutoLogin } from "../../repositories/loginSignUpRepo"
+import { redirect, useParams } from "next/navigation"
 
-export default async function getServerSideProps(){
+export default async function GetServerSideProps(){
+
+    // const { chatId } = useParams()
+    // console.log("ChatId is :", chatId)
+
     var msgList = [{ id: 0, msg: "World", isSent: false }, { id: 1, msg: "World", isSent: true }, { id: 2, msg: "World", isSent: true }]
     console.log(">>> start request")
     var req = headers()
@@ -22,6 +26,6 @@ export default async function getServerSideProps(){
         }
     }
 
-    return isAuthenticated ? <ChatPage msg={msgList}/> : redirect("/login")
+    return isAuthenticated ? <ChatPage food={cookies != null ? cookies : ""} /> : redirect("/login")
 
 }

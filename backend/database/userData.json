@@ -5,20 +5,20 @@
       {
         "receiver": "radhakrishn@gmail.com",
         "chat": [
-          { "sent": "Radhe Radhe Krishn", "at": "2023-09-25T08:35:50.580Z" },
+          { "id": 0, "isSent":true, "data": "Radhe Radhe Krishn", "at": "2023-09-25T08:35:50.580Z" },
           {
-            "received": "Radhe Radhe Parth Kaise ho tum ?",
+            "isSent": false, "data": "Radhe Radhe Parth Kaise ho tum ?",
             "at": "2023-09-25T08:36:50.580Z"
           },
           {
-            "sent": "Prabhu bas aapki kripa hai, ek bar firse aapne jo bhi diya sabka shanyavad",
+            "id": 1, "isSent":true, "data": "Prabhu bas aapki kripa hai, ek bar firse aapne jo bhi diya sabka shanyavad",
             "at": "2023-09-25T08:37:50.580Z"
           },
           {
-            "received": "Khush raho parth main sada hi tumhare sath hu",
+            "id": 2, "isSent": false, "data": "Khush raho parth main sada hi tumhare sath hu",
             "at": "2023-09-25T08:39:50.580Z"
           },
-          { "sent": "Dhanyawad prabhu !", "at": "2023-09-25T08:40:50.580Z" }
+          { "id": 3, "isSent":true, "data": "Dhanyawad prabhu !", "at": "2023-09-25T08:40:50.580Z" }
         ]
       }
     ]
@@ -28,25 +28,57 @@
     "userId": "radhakrishn@gmail.com",
     "messages": [
       {
-        "receiver": "mymail@gmail.com",
+        "receiver": "rada-krishnmail@outlook.com",
         "chat": [
           {
-            "received": "Radhe Radhe Krishn",
+            "id": 0, "isSent": true, "data": "Radhe Radhe Krishn",
             "at": "2023-09-25T08:35:50.580Z"
           },
           {
-            "sent": "Radhe Radhe Parth Kaise ho tum ?",
+            "id": 1,
+            "isSent": false,
+            "data": "Radhe Radhe Parth Kaise ho tum ?",
+            "at": "2023-09-25T09:36:50.580Z"
+          },
+          {
+            "id": 2, "isSent": true, "data": "Prabhu bas aapki kripa hai, ek bar firse aapne jo bhi diya sabka shanyavad",
+            "sentAt": "2023-09-25T10:37:50.580Z"
+          },
+          {
+            "id": 3, "isSent":false, "data": "Khush raho parth main sada hi tumhare sath hu",
+            "at": "2023-09-25T10:49:50.580Z"
+          },
+          { "id": 4, "isSent": true, "data": "Dhanyawad prabhu !", "at": "2023-09-25T10:54:50.580Z" }
+        ]
+      }
+    ]
+  },
+
+  {
+    "userId": "rada-krishnmail@outlook.com",
+    "messages": [
+      {
+        "receiver": "mymail@gmail.com",
+        "chat": [
+          {
+            "id": 0, "isSent": false, "data": "Radhe Radhe Krishn",
+            "at": "2023-09-25T08:35:50.580Z"
+          },
+          {
+            "id": 1,
+            "isSent": false,
+            "data": "Radhe Radhe Parth Kaise ho tum ?",
             "at": "2023-09-25T08:36:50.580Z"
           },
           {
-            "received": "Prabhu bas aapki kripa hai, ek bar firse aapne jo bhi diya sabka shanyavad",
+            "id": 2, "isSent": false, "data": "Prabhu bas aapki kripa hai, ek bar firse aapne jo bhi diya sabka shanyavad",
             "sentAt": "2023-09-25T08:37:50.580Z"
           },
           {
-            "sent": "Khush raho parth main sada hi tumhare sath hu",
+            "id": 3, "isSent":true, "data": "Khush raho parth main sada hi tumhare sath hu",
             "at": "2023-09-25T08:39:50.580Z"
           },
-          { "received": "Dhanyawad prabhu !", "at": "2023-09-25T08:40:50.580Z" }
+          { "id": 4, "isSent": false, "data": "Dhanyawad prabhu !", "at": "2023-09-25T08:40:50.580Z" }
         ]
       }
     ]

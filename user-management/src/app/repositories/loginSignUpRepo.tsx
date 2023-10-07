@@ -25,7 +25,7 @@ export async function onLogin(
     const json = await response.json();
     console.log(json)
     if (json.isSuccess) {
-        router.push("/chat")
+        router.push("/chats")
     } else {
         setError("Invalid login details")
     }
