@@ -46,8 +46,8 @@ function MenuOptions(
             onClick={showMenu} />
         <div ref={optRef} id={styles.dropDownMenu} onMouseLeave={hideMenu} >
             <ul >
-                {items.menuItems.map((it) => {
-                    return <li key={it.name} onClick={it.onclick}>{it.name}</li>
+                {items.menuItems.map((it, index) => {
+                    return <li key = {index} onClick={it.onclick}>{it.name}</li>
                 })}
             </ul>
         </div>

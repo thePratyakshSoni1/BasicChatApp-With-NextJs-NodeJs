@@ -17,10 +17,13 @@ export default function HelloPage(){
             }}>LogIn</button>
             <button onClick={()=>{
                 router.push("/hello")
-            }}>Hello</button>
+            }}>Hello</button> 
+            <button onClick={()=>{
+                fetchPeoples()  // loaded by js
+            }}>Check JS</button>
             <br></br>
 
-        <Script src="./clientScr.js"/>
+        <Script src="/getChats.js"/>
 
     </>
 

@@ -70,7 +70,7 @@ function getChatPeoples(relPathToUsersJsonFile, self) {
   );
 
   for (let i = 0; i < peoples.length; i++) {
-    if (self === peoples[i].userId.split("=")[1]) {
+    if (self === peoples[i].userId) {
       peoples = [
         ...peoples.slice(0, i),
         ...peoples.slice(i + 1, peoples.length),

@@ -28,9 +28,9 @@ const httpServer = http.createServer(async (req, res) => {
   if (!handleCors(req, res)) {
     console.log(">>> REQUEST ON: ", req.url);
     console.log(">>> Origin:", req.headers.origin);
-    console.log("Received Cookies: ", req.headers.cookie);
 
     let cookiesReceived = extractCookiesFromReq(req.headers.cookie)
+    console.log("Extraced cooks", cookiesReceived)
 
     switch (req.url) {
       case requestRoutes.addUser:

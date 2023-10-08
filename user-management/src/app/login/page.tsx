@@ -72,7 +72,7 @@ export default async function getServerSideProps() {
 
 
     let keyPayload = isEncRequestComplete ? JSON.parse(key) : undefined
-    return isAuthenticated ? redirect("/chat") : isEncRequestComplete ? <LoginPage
+    return isAuthenticated ? redirect("/chats") : isEncRequestComplete ? <LoginPage
         myKeys={{ public: keyPayload.public, mod: keyPayload.mod }}
         food={req.get("cookie")}
     /> : <div>

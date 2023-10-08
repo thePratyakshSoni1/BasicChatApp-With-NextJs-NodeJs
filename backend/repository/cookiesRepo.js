@@ -69,7 +69,7 @@ function extractCookiesFromReq(cookieString){
   var cookieReceived = {}
   if(cookieString){
     cookieString.split("; ").forEach(it=>{
-      cookieReceived[it.split("=")[0]] = it.split("=")[0]
+      cookieReceived[it.split("=")[0]] = it.split("=")[1]
     })
     return cookieReceived
   }else{
