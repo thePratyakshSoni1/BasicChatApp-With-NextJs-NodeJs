@@ -1,23 +1,36 @@
-const http = require("http");
-const corsReqHandler = require("./corsRequestHandler");
-
-http
-  .createServer((req, res) => {
-    console.log("REQUEST CAME: ", req.headers, "\n\n");
-
-    if (!corsReqHandler.handleCors(req, res)) {
-      switch (req.url) {
-        case "/test":
-          req.on("data", (chunk) => {
-            console.log("Data received" + chunk);
-            res.end(chunk.toString());
-          });
-          console.log("Out of event listener");
-          break;
-        default:
-          res.end(JSON.stringify({ msg: "On a wrong path buddy" }));
-      }
+const {  EventEmitter } = require("events")
+class myclass extends EventEmitter{
+    constructor(){
+        super()
+        this.me= true
     }
 
-  })
-  .listen(3100);
+    launch(){
+        setTimeout(()=>this.emit("okay", this), 2000)
+        setTimeout(()=>this.emit("stop", this), 4000)
+        setTimeout(()=>this.emit("bye", this), 7000)
+    }
+
+
+}
+
+let x = new myclass()
+
+x.launch()
+x.on("stop", (y)=>{
+    y.me = false
+})
+
+new Promise(async ()=>{
+    while(x.me){
+        console.log("ME...")
+        await new Promise((res, rej)=>{ setTimeout(()=>console.log("..."), 800) })
+    }
+})
+
+
+x.on("okay", (y)=>{
+    console.log("Hi i'm: ", y.me)
+    x.on("bye", (z)=>console.log("bye: ",z.me))
+})
+

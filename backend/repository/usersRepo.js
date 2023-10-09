@@ -58,8 +58,6 @@ function getUser(relPathToUsersJsonFile, userId) {
     }
   });
 
-  console.log(resp);
-
   return resp ? resp : { error: true, message: "user not found" };
 }
 
@@ -77,7 +75,7 @@ function getChatPeoples(relPathToUsersJsonFile, self) {
       ];
     }
   }
-  console.log("people: ", peoples);
+  // console.log("people: ", peoples);
 
   return peoples.map((it) => {
     return {

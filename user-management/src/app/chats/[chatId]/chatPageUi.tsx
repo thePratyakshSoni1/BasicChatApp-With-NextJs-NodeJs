@@ -72,22 +72,40 @@ export default function ChatPage({ food }: { food: string }) {
 
 
     useEffect(() => {
-        console.log("I'll run ony once")
-        var headers = new Headers()
-        headers.append('Content-Type', 'application/json')
-        headers.append('Content-Length', `${payload.length}`)
-        headers.append('Cookie', food)
-        fetch('http://localhost:3100/textHistory', {
-            method: "POST",
-            credentials: 'include',
-            headers: headers,
-            body: payload
-        }).then((it) => {
-            it.json().then(chunk => {
-                console.log("receiver: ", chunk )
-                setMessage(chunk)
-            })
-        });
+
+        let chatSocket = new WebSocket("ws://localhost:3200")
+        let chatHistory = []
+        chatSocket.addEventListener("message", (it)=>{
+            JSON.parse(it.data).messages.forEach((msgPayloads) => {
+                chatHistory =
+                  msgPayloads.receiver.split("@")[0] === chatId
+                    ? msgPayloads.chat
+                    : [];
+              });
+
+              var sortedTexts = chatHistory.sort((a, b) => {
+                return (new Date(a.at)) <= (new Date(b.at)) ? -1 : 1;
+              });
+              console.log("setting msgs: ", sortedTexts)
+              setMessage(sortedTexts)
+        })
+
+        // console.log("I'll run ony once")
+        // var headers = new Headers()
+        // headers.append('Content-Type', 'application/json')
+        // headers.append('Content-Length', `${payload.length}`)
+        // headers.append('Cookie', food)
+        // fetch('http://localhost:3100/textHistory', {
+        //     method: "POST",
+        //     credentials: 'include',
+        //     headers: headers,
+        //     body: payload
+        // }).then((it) => {
+        //     it.json().then(chunk => {
+        //         console.log("receiver: ", chunk )
+        //         setMessage(chunk)
+        //     })
+        // });
     }, [true])
 
 

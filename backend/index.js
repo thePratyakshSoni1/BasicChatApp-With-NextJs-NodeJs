@@ -1,7 +1,5 @@
 const http = require("http");
 const { setKeys, generatePrimeNums, decode, decryptData } = require("./rsaGo");
-const { AuthRequest } = require("./authenticateReques");
-const { getUserMessages } = require("./UserMessagesRepo");
 const { addUser, getChatPeoples, getTextHistory, getUser } = require("./repository/usersRepo");
 const { handleCors } = require("./corsRequestHandler");
 const { requestRoutes, loginCookies } = require("./utils/constants.json");
@@ -12,7 +10,8 @@ const {
   verifyLoginCookies,
   extractCookiesFromReq,
 } = require("./repository/cookiesRepo");
-const file = require("fs")
+const file = require("fs");
+const { activateChatSocket } = require("./sockets/ChatSockets");
 
 var myKeys = setKeys(generatePrimeNums());
 let serverValues = JSON.parse(file.readFileSync("./serverValues.json"))
@@ -112,7 +111,6 @@ const httpServer = http.createServer(async (req, res) => {
           mod: myKeys.mod,
         };
         console.log(req.headers);
-        console.log("Food on node: ", req.cookie);
         console.log("To be sent: ", JSON.stringify(datToBeSent));
         res.end(JSON.stringify(datToBeSent));
         break;
@@ -121,7 +119,6 @@ const httpServer = http.createServer(async (req, res) => {
         var cookies = []
         cookies = req.headers.cookie.split("; ");
         
-        console.log("food", cookies);
         if(req.headers.cookie && verifyLoginCookies(cookies).isVerified){
           res.end(JSON.stringify(getChatPeoples("./database/users.json", cookiesReceived.userId )))
         }else{
@@ -133,7 +130,6 @@ const httpServer = http.createServer(async (req, res) => {
       case requestRoutes.getTextHistory:
         var cookies = []
         cookies = req.headers.cookie.split("; ")
-        console.log("food: ", cookies)
         let userId = ""
         cookies.forEach(it => {
           if(it.split("=")[0] === loginCookies.userId){
@@ -157,6 +153,9 @@ const httpServer = http.createServer(async (req, res) => {
         res.end(JSON.stringify({ status: "Logout processed" }));
         break;
 
+      case requestRoutes.chatSocket:
+        break;
+
       default:
         res.end("Bad request !");
         break;
@@ -165,6 +164,7 @@ const httpServer = http.createServer(async (req, res) => {
 });
 
 httpServer.listen(3100);
+activateChatSocket()
 
 /***
  * >>> Economy

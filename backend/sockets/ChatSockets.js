@@ -1,6 +1,38 @@
 const http = require("http");
 const { EventEmitter } = require("events");
 const crypto = require("crypto");
+const { verifyLoginCookies } = require("../repository/cookiesRepo");
+const file = require("fs");
+const {
+  getChatsUpdateAfter,
+  getSpecificChatHistory,
+  getLastUpdate,
+} = require("../repository/chatsRepo");
+
+async function testWebSocket(callback) {
+  return new Promise(async function (res, rej) {
+    console.log("Inside of Promise callback");
+    callback(res);
+    while (true) {
+      console.log("Hello...");
+      await waier();
+    }
+  });
+}
+
+function sleep() {
+  return new Promise((reo, rjo) => {
+    setTimeout(() => {
+      reo();
+    }, 2000);
+  });
+}
+
+async function waier() {
+  return new Promise((res, rej) => {
+    setTimeout(res, 1500);
+  });
+}
 
 class WebSocketServer extends EventEmitter {
   // initialize object and add port
@@ -12,7 +44,7 @@ class WebSocketServer extends EventEmitter {
     this.OPCODES = { text: 0x01, close: 0x08 };
   }
 
-  init() {
+  async init() {
     if (this.server) throw new Error(`Server already initialized`);
 
     this.server = http.createServer((req, res) => {
@@ -28,9 +60,66 @@ class WebSocketServer extends EventEmitter {
     this.server.on(`upgrade`, (req, socket) => {
       console.log("Upgrade req received...");
       this.emit("headers", req);
+      console.log("Cooks: ", req.headers.cookie);
       if (req.headers.upgrade !== "websocket") {
         socket.end("HTTP/1.1 400 Bad Request");
         return;
+      } else {
+        if (
+          req.headers.cookie &&
+          verifyLoginCookies(req.headers.cookie.split("; ")).isVerified
+        ) {
+          console.log("Is verified and logged user");
+          req.headers.cookie.split("; ").forEach((it) => {
+            console.log("doing fo each");
+            if (it.split("=")[0] === "userId") {
+              new Promise(async (ros, rej) => {
+                let isConnected = true;
+
+                socket.on("error", (e) => {
+                  console.log(
+                    "Uncaught Socket error on: ",
+                    it.split("=")[1],
+                    e.name
+                  );
+                  this.emit("closeReq", it.split("=")[1]);
+                });
+
+                new Promise(async (res, rej) => {
+
+                  let lastUpdated = undefined;
+                  this.on("closeReq", () => {
+                    console.log("Closing socket: ", it.split("=")[1]);
+                    console.log("Closing socket: ", it.split("=")[1]);
+                    isConnected = false;
+                    ros();
+                  });
+
+                  while (isConnected) {
+                    await sleep();
+                    console.log("RADHE RADHE: ", it.split("=")[1]);
+                    let updates = await getChatsUpdateAfter(
+                      it.split("=")[1],
+                      lastUpdated
+                    );
+                    if (updates) {
+                      lastUpdated = updates.lastUpdated;
+                      socket.write(this.createFrame(updates));
+                    } else {
+                      console.log("No updates...");
+                    }
+                  }
+                  res();
+                }).then(() => console.log("While loop settled"));
+              }).then(() => console.log("Callback state settled"));
+            }
+
+            console.log("Out of Promise callback");
+          });
+        } else {
+          socket.end("HTTP/1.1 400 Bad Request");
+          return;
+        }
       }
 
       const acceptKey = req.headers["sec-websocket-key"];
@@ -52,8 +141,10 @@ class WebSocketServer extends EventEmitter {
       });
 
       socket.on("data", (buffer) => {
-        console.log("socket on data received: ...", buffer);
-        this.emit("data", this.parseFrame(buffer), (data)=>socket.write(this.createFrame(data)));
+        console.log("socket on data received: ...", buffer.toString());
+        this.emit("data", this.parseFrame(buffer), (data) =>
+          socket.write(this.createFrame(data))
+        );
       });
     });
   }
@@ -115,6 +206,7 @@ class WebSocketServer extends EventEmitter {
       const payload = buffer.subarray(offset);
       // console.log("Mansked payload is: ", payload, "\n", new Uint8Array(payload));
       const result = this.unmask(payload, maskingKey.toString());
+      console.log("Unmasked: ", result.toString("utf-8"));
       return result.toString("utf-8");
       //   return result;
     }
@@ -158,7 +250,7 @@ class WebSocketServer extends EventEmitter {
       payloadBytesOffset += 8;
       payloadByteLength = 127;
     } else if (payloadByteLength > 125) {
-      payloadBytesOffset += 2; 
+      payloadBytesOffset += 2;
       payloadLength = 126;
     }
 
@@ -182,7 +274,6 @@ class WebSocketServer extends EventEmitter {
     // finally write data to buffer
     buffer.write(payload, payloadBytesOffset);
     return buffer;
-
   }
 
   listen(callback) {
@@ -190,21 +281,36 @@ class WebSocketServer extends EventEmitter {
   }
 }
 
-const PORT = 3200;
-const server = new WebSocketServer({ port: PORT });
-server.on("headers", ({ headers }) =>
-  console.log("Headers Received: \n", headers)
-);
+function activateChatSocket() {
+  const PORT = 3200;
+  const server = new WebSocketServer({ port: PORT });
+  server.on("headers", ({ headers }) =>
+    console.log("Headers Received: \n", headers)
+  );
 
-server.on("data", (message, reply) => {
-  if (!message) return;
+  server.on("data", (message, reply) => {
+    if (!message) return;
 
-  // console.log("Received for parsing; ", message);
-  const data = JSON.parse(message);
-  console.log("Message received:", data);
-  return reply({pong: data})
-});
+    // console.log("Received for parsing; ", message);
+    const data = JSON.parse(message);
+    if (data.isCloseReq) {
+      console.log("GIT CLOSE REQ");
+      server.emit("closeReq");
+    }
+    console.log("Message received:", data);
+    return reply({ pong: data });
+  });
 
-server.listen(() => {
-  console.log(`WebSocket server listening on ${PORT}`);
-});
+  server.on("close", () => {
+    console.log("Conn closed");
+    server.emit("closeReq")
+  });
+
+  server.listen(() => {
+    console.log(`🚀🚀 ChatSocket Activated: listening on ${PORT}`);
+  });
+}
+
+// activateChatSocket()
+
+module.exports = { activateChatSocket };

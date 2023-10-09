@@ -18,7 +18,8 @@
         "verifyLoginCookies": "/verifyLogin",
         "logout": "/logout",
         "peoples": "/peoples",
-        "getTextHistory": "/textHistory"
+        "getTextHistory": "/textHistory",
+        "chatSocket": "/chatSocket"
     }
 
 }

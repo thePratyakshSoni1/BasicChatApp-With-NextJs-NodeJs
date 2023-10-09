@@ -32,7 +32,7 @@ function deleteAllLoginCookies(res) {
   ]);
 }
 
-function verifyLoginCookies(cookies) {
+function verifyLoginCookies(cookiesList) {
   let user = JSON.stringify("{}");
   let logToken = "";
   let enKey = 0;
@@ -42,7 +42,7 @@ function verifyLoginCookies(cookies) {
 
   const { loginKeys } = JSON.parse(file.readFileSync("./serverValues.json"))
 
-  cookies.forEach((element) => {
+  cookiesList.forEach((element) => {
     if (element.split("=")[0] === "userId") {
       user = getUser("./database/users.json", element.split("=")[1]).userData;
     }

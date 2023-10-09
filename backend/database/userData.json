@@ -1,6 +1,7 @@
 [
   {
     "userId": "mymail@gmail.com",
+    "lastUpdated": "2023-09-25T08:40:50.580Z",
     "messages": [
       {
         "receiver": "radhakrishn@gmail.com",
@@ -26,6 +27,7 @@
 
   {
     "userId": "radhakrishn@gmail.com",
+    "lastUpdated": "2023-09-25T08:40:50.580Z",
     "messages": [
       {
         "receiver": "rada-krishnmail@outlook.com",
@@ -56,6 +58,7 @@
 
   {
     "userId": "rada-krishnmail@outlook.com",
+    "lastUpdated": "2023-09-25T08:40:50.580Z",
     "messages": [
       {
         "receiver": "mymail@gmail.com",
