@@ -2,10 +2,17 @@ import fs from "fs"
 import http from "http"
 import { headers } from "next/headers"
 import HomePage from "./chatsPageUi"
-import { verifyAutoLogin } from "../repositories/loginSignUpRepo"
-import { redirect } from "next/navigation"
+import { verifyAutoLogin, verifyAutoLoginNoCache } from "../../repositories/loginSignUpRepo"
+import { redirect, usePathname } from "next/navigation"
+import { useEffect } from "react"
+import Script from "next/script"
 
-export default async function getServerSideProps() {
+
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
+
+export default async function GetServerSideProps() {
 
 
     var cookies = headers().get("cookie")
@@ -15,9 +22,10 @@ export default async function getServerSideProps() {
 
     isLoggedUser = (cookies?.includes("userId") && cookies?.includes("logToken") && cookies?.includes("enKey")) ? true : false
     console.log(isLoggedUser)
-
+    
+    
     if (isLoggedUser) {
-        let verificationResp = await verifyAutoLogin(cookies ? cookies : "")
+        let verificationResp = await verifyAutoLoginNoCache(cookies ? cookies : "")
         if (verificationResp.isVerified) {
             isAuthenticated = true
         }
@@ -30,6 +38,5 @@ export default async function getServerSideProps() {
     }
 
     return <HomePage food={cookies===null ? "" : cookies}/>
-
 
 }

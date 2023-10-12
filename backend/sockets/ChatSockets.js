@@ -1,7 +1,10 @@
 const http = require("http");
 const { EventEmitter } = require("events");
 const crypto = require("crypto");
-const { verifyLoginCookies } = require("../repository/cookiesRepo");
+const {
+  verifyLoginCookies,
+  extractCookiesFromReq,
+} = require("../repository/cookiesRepo");
 const file = require("fs");
 const {
   getChatsUpdateAfter,
@@ -24,7 +27,7 @@ function sleep() {
   return new Promise((reo, rjo) => {
     setTimeout(() => {
       reo();
-    }, 2000);
+    }, 4000);
   });
 }
 
@@ -42,6 +45,7 @@ class WebSocketServer extends EventEmitter {
     this.init();
     this.GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
     this.OPCODES = { text: 0x01, close: 0x08 };
+    this.connctions = []; // { chatSessionId:string, userId: string, connectedAt: Date }[]
   }
 
   async init() {
@@ -70,52 +74,65 @@ class WebSocketServer extends EventEmitter {
           verifyLoginCookies(req.headers.cookie.split("; ")).isVerified
         ) {
           console.log("Is verified and logged user");
-          req.headers.cookie.split("; ").forEach((it) => {
-            console.log("doing fo each");
-            if (it.split("=")[0] === "userId") {
-              new Promise(async (ros, rej) => {
-                let isConnected = true;
+          let socketFood = extractCookiesFromReq(req.headers.cookie);
 
-                socket.on("error", (e) => {
-                  console.log(
-                    "Uncaught Socket error on: ",
-                    it.split("=")[1],
-                    e.name
-                  );
-                  this.emit("closeReq", it.split("=")[1]);
-                });
+          this.connectionCount += 1
 
-                new Promise(async (res, rej) => {
+          this.connctions.push( { 
+            chatSessionId: socketFood.chatSession,
+            userId: socketFood.userId,
+            connectedAt: new Date() 
+           } )
 
-                  let lastUpdated = undefined;
-                  this.on("closeReq", () => {
-                    console.log("Closing socket: ", it.split("=")[1]);
-                    console.log("Closing socket: ", it.split("=")[1]);
-                    isConnected = false;
-                    ros();
-                  });
+          console.log("Connections now: ", this.connctions)
 
-                  while (isConnected) {
-                    await sleep();
-                    console.log("RADHE RADHE: ", it.split("=")[1]);
-                    let updates = await getChatsUpdateAfter(
-                      it.split("=")[1],
-                      lastUpdated
-                    );
-                    if (updates) {
-                      lastUpdated = updates.lastUpdated;
-                      socket.write(this.createFrame(updates));
-                    } else {
-                      console.log("No updates...");
-                    }
-                  }
-                  res();
-                }).then(() => console.log("While loop settled"));
-              }).then(() => console.log("Callback state settled"));
-            }
+          new Promise(async (ros, rej) => {
+            let isConnected = true;
 
-            console.log("Out of Promise callback");
-          });
+            socket.on("error", (e) => {
+              console.log(
+                "Uncaught Socket error on: ",
+                socketFood.userId,
+                e.name
+              );
+              this.emit("closeReq", socketFood.userId);
+            });
+
+            new Promise(async (res, rej) => {
+              let lastUpdated = undefined;
+              this.on("closeReq", () => {
+                console.log("Closing socket: ", socketFood.userId);
+                console.log("Closing socket: ", socketFood.userId);
+                isConnected = false;
+                ros();
+              });
+
+              while (isConnected) {
+                await sleep();
+                var sameUserSockets = this.connctions.filter(it=>{
+                  return it.userId === socketFood.userId
+                })
+                // if()
+
+                console.log("RADHE RADHE: ", socketFood.userId);
+                let updates = await getChatsUpdateAfter(
+                  socketFood.userId,
+                  lastUpdated
+                );
+
+                if (updates) {
+                  lastUpdated = updates.lastUpdated;
+
+                  socket.write(this.createFrame(updates));
+                } else {
+                  console.log("No updates...");
+                }
+              }
+              res();
+            }).then(() => console.log("While loop settled"));
+          }).then(() => console.log("Callback state settled"));
+
+          console.log("Out of promise callback")
         } else {
           socket.end("HTTP/1.1 400 Bad Request");
           return;
@@ -303,7 +320,7 @@ function activateChatSocket() {
 
   server.on("close", () => {
     console.log("Conn closed");
-    server.emit("closeReq")
+    server.emit("closeReq");
   });
 
   server.listen(() => {

@@ -50,6 +50,25 @@ export async function verifyAutoLogin(tokens: string){
     return resp
 }
 
+export async function verifyAutoLoginNoCache(tokens: string){
+
+    var myHeaders = new Headers()
+    
+    myHeaders.append("cookie", `${tokens}`)
+
+    let req = await fetch("http://localhost:3100/verifyLogin", {
+        credentials: "include",
+        method: "GET",
+        headers: myHeaders,
+        cache: 'no-store'
+    })
+
+    let resp = await req.json()
+
+    console.log("Verification resp: ", resp)
+    return resp
+}
+
 export async function onLogout(router: AppRouterInstance){
     var myHeaders = new Headers()
     let logoutRequest = await fetch("http://localhost:3100/logout", {

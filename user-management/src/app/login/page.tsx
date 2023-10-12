@@ -5,7 +5,7 @@ import fun, { generatePrimeNums, setKeys } from "../../../../backend/rsaGo"
 import LoginPage from "./loginPageUi"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
-import { verifyAutoLogin } from "../repositories/loginSignUpRepo"
+import { verifyAutoLogin } from "../../repositories/loginSignUpRepo"
 
 export default async function getServerSideProps() {
     console.log(">>> start request")

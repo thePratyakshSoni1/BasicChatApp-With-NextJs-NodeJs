@@ -3,7 +3,7 @@ import React from "react"
 import styles from "./log2/page.module.css"
 import { useRouter } from "next/navigation"
 import Script from "next/script"
-import { onLogin } from "../repositories/loginSignUpRepo"
+import { onLogin } from "../../repositories/loginSignUpRepo"
 
 // function ErrorComponent(item: { msg: string }) {
 //     if (item.msg !== "") {

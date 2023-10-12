@@ -1,11 +1,13 @@
 'use client'
-import React, { useEffect, useRef } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import styles from "./chatPage.module.css"
 import Image from "next/image"
-import { onLogout } from "../../repositories/loginSignUpRepo"
-import { useParams, useRouter } from "next/navigation"
+import { onLogout } from "../../../repositories/loginSignUpRepo"
+import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation"
 import http from "http"
 import { headers } from "next/headers"
+import Script from "next/script"
+import { useHomeContext } from "../../../../Contexts/HomeContextProvider"
 
 function MessageChip({ msg, isSent }: { msg: string, isSent: boolean }) {
     if (isSent)
@@ -61,66 +63,75 @@ export default function ChatPage({ food }: { food: string }) {
 
     const chatList = React.useRef<null | HTMLElement>(null)
 
-    const [messages, setMessage] = React.useState<{ id: number, data: string, isSent: boolean, at: string }[]>([])
     const [msgField, setMadFieldText] = React.useState("")
     const [isOptionsVisible, setOptionsVisible] = React.useState(false)
+    const [userTexts, setUserTexts] = useState<{ id: number, isSent: boolean, data: string, at: string }[]>([])
 
     const { chatId } = useParams()
+
     const router = useRouter()
 
-    var payload = JSON.stringify({ recepient: chatId })
-
+    const chatSocket = useHomeContext()
 
     useEffect(() => {
 
-        let chatSocket = new WebSocket("ws://localhost:3200")
-        let chatHistory = []
-        chatSocket.addEventListener("message", (it)=>{
-            JSON.parse(it.data).messages.forEach((msgPayloads) => {
-                chatHistory =
-                  msgPayloads.receiver.split("@")[0] === chatId
-                    ? msgPayloads.chat
-                    : [];
-              });
-
-              var sortedTexts = chatHistory.sort((a, b) => {
-                return (new Date(a.at)) <= (new Date(b.at)) ? -1 : 1;
-              });
-              console.log("setting msgs: ", sortedTexts)
-              setMessage(sortedTexts)
+        const currentuser = food.split("; ").find((v)=>{
+            return v.split("=")[0] === "userId"
         })
 
-        // console.log("I'll run ony once")
-        // var headers = new Headers()
-        // headers.append('Content-Type', 'application/json')
-        // headers.append('Content-Length', `${payload.length}`)
-        // headers.append('Cookie', food)
-        // fetch('http://localhost:3100/textHistory', {
-        //     method: "POST",
-        //     credentials: 'include',
-        //     headers: headers,
-        //     body: payload
-        // }).then((it) => {
-        //     it.json().then(chunk => {
-        //         console.log("receiver: ", chunk )
-        //         setMessage(chunk)
-        //     })
-        // });
+        const randomId = `${chatId}${parseInt((Math.random()*500000).toString())}${currentuser?.split("=")[1].split("@")[0]}`
+        document.cookie = `chatSession=${randomId}; path=/;`
+
+        // let chatSocket = new WebSocket("ws://localhost:3200")
+
+        if(chatSocket.socket){
+            console.log("Socket already defined")
+        }else{
+            chatSocket.initSocket()
+        }
+
+
+        window.addEventListener('beforeunload', (beforeUnloadEvent)=>{
+            console.log("Changing nwMethod")
+            alert("Changin...aAaaAAaaAAAA")
+            return "Changin...aAaaAAaaAAAA"
+        })
+
     }, [true])
 
+    useEffect(
+        ()=>{
+            let chatHistory: any[] = []
+            chatSocket.messages?.messages.forEach((msgPayloads) => {
+                chatHistory =
+                msgPayloads.receiver.split("@")[0] === chatId
+                    ? msgPayloads.chat
+                    : [];
+            });
 
-    React.useEffect(
+            var sortedTexts = chatHistory.sort((a, b) => {
+                return (new Date(a.at)) <= (new Date(b.at)) ? -1 : 1;
+            });
+
+            setUserTexts(sortedTexts)
+        }, [chatSocket?.messages, chatId]
+    )
+
+    
+    useEffect(
         () => {
-            console.log("Now messages: ", messages)
+            console.log("Now updates: ", userTexts)
             chatList.current?.scrollBy(0, chatList.current.scrollHeight)
-        }, [messages]
+        }, [userTexts]
     )
 
     const onSend = () => {
-        let toUpdate = { id: messages.length, isSent: true, data: msgField, at: (new Date()).toUTCString() }
-        setMessage([...messages, toUpdate])
-        setMadFieldText("")
-        // console.log(messages)
+        if(chatSocket.messages){
+            let toUpdate = { id: userTexts.length, isSent: true, data: msgField, at: (new Date()).toUTCString() }
+            setUserTexts([...userTexts, toUpdate])
+            setMadFieldText("")
+            // console.log(messages)
+        }
     }
 
     const handleOptionsVisibility = () => {
@@ -154,7 +165,7 @@ export default function ChatPage({ food }: { food: string }) {
 
             <section ref={chatList} className={styles.chatSection} onChange={(ev) => { }}>
                 {
-                    messages.map((it) => {
+                    userTexts.map((it) => {
                         return <MessageChip key={it.id} msg={it.data} isSent={it.isSent} />
                     })
                 }
@@ -173,5 +184,6 @@ export default function ChatPage({ food }: { food: string }) {
             </section>
 
         </section>
+        {/* <Script src="/clientScr.js" /> */}
     </section>
 }

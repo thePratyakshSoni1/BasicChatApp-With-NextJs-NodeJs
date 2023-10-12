@@ -1,9 +1,10 @@
 "use client"
-import { redirect, useRouter } from "next/navigation"
+import { redirect, usePathname, useRouter, useSearchParams } from "next/navigation"
 import styles from "./chatsPage.module.css"
 import Image from "next/image"
 import { useEffect, useState } from "react"
 import Script from "next/script"
+import { useHomeContext } from "../../../Contexts/HomeContextProvider"
 
 export default function HomePage(
     props: { food: string }
@@ -17,9 +18,19 @@ export default function HomePage(
 
     const [chats, setPeoples] = useState<{ name: string, mail: string }[]>([{ name: "string", mail: "string" }])
     const router = useRouter()
+    const chatSocket = useHomeContext()
+
 
     useEffect(
         () => {
+
+            if(chatSocket.socket){
+                chatSocket.sendMsg( "mymail@gmail.com" ,JSON.stringify({ping: "Hey NextJs"}))
+            }else{
+                chatSocket.initSocket()
+                chatSocket.sendMsg( "mymail@gmail.com" ,JSON.stringify({ping: "Hey NextJs After Init"}))
+            }
+
             let chatsXhttpReq = new XMLHttpRequest();
             chatsXhttpReq.onreadystatechange = function () {
                 if (this.readyState == 4 && this.status == 200) {
@@ -59,6 +70,5 @@ export default function HomePage(
             </div>
         </section>
 
-        {/* <Script src="/getChats.js" /> */}
     </>
 }
