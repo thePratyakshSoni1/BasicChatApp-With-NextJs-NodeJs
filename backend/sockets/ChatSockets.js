@@ -76,15 +76,13 @@ class WebSocketServer extends EventEmitter {
           console.log("Is verified and logged user");
           let socketFood = extractCookiesFromReq(req.headers.cookie);
 
-          this.connectionCount += 1
-
-          this.connctions.push( { 
+          this.connctions.push({
             chatSessionId: socketFood.chatSession,
             userId: socketFood.userId,
-            connectedAt: new Date() 
-           } )
+            connectedAt: new Date(),
+          });
 
-          console.log("Connections now: ", this.connctions)
+          console.log("Connections now: ", this.connctions);
 
           new Promise(async (ros, rej) => {
             let isConnected = true;
@@ -109,9 +107,9 @@ class WebSocketServer extends EventEmitter {
 
               while (isConnected) {
                 await sleep();
-                var sameUserSockets = this.connctions.filter(it=>{
-                  return it.userId === socketFood.userId
-                })
+                var sameUserSockets = this.connctions.filter((it) => {
+                  return it.userId === socketFood.userId;
+                });
                 // if()
 
                 console.log("RADHE RADHE: ", socketFood.userId);
@@ -132,7 +130,7 @@ class WebSocketServer extends EventEmitter {
             }).then(() => console.log("While loop settled"));
           }).then(() => console.log("Callback state settled"));
 
-          console.log("Out of promise callback")
+          console.log("Out of promise callback");
         } else {
           socket.end("HTTP/1.1 400 Bad Request");
           return;
