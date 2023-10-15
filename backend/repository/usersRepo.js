@@ -1,4 +1,4 @@
-const { decryptData } = require("../rsaGo");
+const { decryptData } = require("../utils/rsaGo");
 
 const isUniqueUser = (user, relPathToUsersJsonFile) => {
   const file = require("fs");

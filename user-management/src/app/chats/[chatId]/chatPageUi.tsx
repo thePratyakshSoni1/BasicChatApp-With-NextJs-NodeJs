@@ -7,7 +7,7 @@ import { useParams, usePathname, useRouter, useSearchParams } from "next/navigat
 import http from "http"
 import { headers } from "next/headers"
 import Script from "next/script"
-import { useHomeContext } from "../../../../Contexts/HomeContextProvider"
+import { useHomeContext } from "../../../Contexts/HomeContextProvider"
 
 function MessageChip({ msg, isSent }: { msg: string, isSent: boolean }) {
     if (isSent)
@@ -73,35 +73,9 @@ export default function ChatPage({ food }: { food: string }) {
 
     const chatSocket = useHomeContext()
 
-    useEffect(() => {
-
-        const currentuser = food.split("; ").find((v)=>{
-            return v.split("=")[0] === "userId"
-        })
-
-        const randomId = `${chatId}${parseInt((Math.random()*500000).toString())}${currentuser?.split("=")[1].split("@")[0]}`
-        document.cookie = `chatSession=${randomId}; path=/;`
-
-        // let chatSocket = new WebSocket("ws://localhost:3200")
-
-        if(chatSocket.socket){
-            console.log("Socket already defined")
-        }else{
-            chatSocket.initSocket()
-        }
-
-
-        window.addEventListener('beforeunload', (beforeUnloadEvent)=>{
-            console.log("Changing nwMethod")
-            alert("Changin...aAaaAAaaAAAA")
-            return "Changin...aAaaAAaaAAAA"
-        })
-
-    }, [true])
-
-    useEffect(
-        ()=>{
-            let chatHistory: any[] = []
+    const updateUserTexts = ()=>{
+        console.log("Populating text history")
+        let chatHistory: { id: number, isSent: boolean, data: string, at: string }[] = []
             chatSocket.messages?.messages.forEach((msgPayloads) => {
                 chatHistory =
                 msgPayloads.receiver.split("@")[0] === chatId
@@ -112,10 +86,22 @@ export default function ChatPage({ food }: { food: string }) {
             var sortedTexts = chatHistory.sort((a, b) => {
                 return (new Date(a.at)) <= (new Date(b.at)) ? -1 : 1;
             });
-
             setUserTexts(sortedTexts)
-        }, [chatSocket?.messages, chatId]
-    )
+    }
+
+    useEffect(() => {
+
+        updateUserTexts()
+
+        window.addEventListener('beforeunload', (beforeUnloadEvent)=>{
+            console.log("Changing nwMethod")
+            alert("Changin...aAaaAAaaAAAA")
+            return "Changin...aAaaAAaaAAAA"
+        })
+
+    }, [true])
+
+    useEffect(updateUserTexts, [chatSocket?.messages, chatId])
 
     
     useEffect(

@@ -1,7 +1,7 @@
 import fs from "fs"
 import http from "http"
 import { headers } from "next/headers"
-import HomePage from "./chatsPageUi"
+import HomePage from "./userChats"
 import { verifyAutoLogin, verifyAutoLoginNoCache } from "../../repositories/loginSignUpRepo"
 import { redirect, usePathname } from "next/navigation"
 import { useEffect } from "react"

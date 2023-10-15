@@ -1,6 +1,6 @@
 const { loginCookies } = require("../utils/constants.json");
 const { getUser } = require("./usersRepo")
-const { decryptData } = require("../rsaGo")
+const { decryptData } = require("../utils/rsaGo")
 
 function addLoginCookiesToResponse(logToken, userId, enKey, mod, response) {
   let loginSessionWeekLimit = 4; //weeks
@@ -40,7 +40,7 @@ function verifyLoginCookies(cookiesList) {
 
   const file = require("fs")
 
-  const { loginKeys } = JSON.parse(file.readFileSync("./serverValues.json"))
+  const { loginKeys } = JSON.parse(file.readFileSync("./utils/serverValues.json"))
 
   cookiesList.forEach((element) => {
     if (element.split("=")[0] === "userId") {

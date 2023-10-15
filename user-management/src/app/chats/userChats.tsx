@@ -4,7 +4,7 @@ import styles from "./chatsPage.module.css"
 import Image from "next/image"
 import { useEffect, useState } from "react"
 import Script from "next/script"
-import { useHomeContext } from "../../../Contexts/HomeContextProvider"
+import { useHomeContext } from "../../Contexts/HomeContextProvider"
 
 export default function HomePage(
     props: { food: string }
@@ -24,12 +24,12 @@ export default function HomePage(
     useEffect(
         () => {
 
-            if(chatSocket.socket){
-                chatSocket.sendMsg( "mymail@gmail.com" ,JSON.stringify({ping: "Hey NextJs"}))
-            }else{
-                chatSocket.initSocket()
-                chatSocket.sendMsg( "mymail@gmail.com" ,JSON.stringify({ping: "Hey NextJs After Init"}))
-            }
+            const currentuser = props.food.split("; ").find((v) => {
+                return v.split("=")[0] === "userId"
+            })
+
+            const randomId = `${parseInt((Math.random() * 500000).toString())}${currentuser?.split("=")[1].split("@")[0]}`
+            document.cookie = `chatSession=${randomId}; path=/;`
 
             let chatsXhttpReq = new XMLHttpRequest();
             chatsXhttpReq.onreadystatechange = function () {

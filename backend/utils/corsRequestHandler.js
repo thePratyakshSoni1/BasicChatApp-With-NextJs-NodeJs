@@ -1,4 +1,4 @@
-const Constants = require("./utils/constants.json")
+const Constants = require("./constants.json")
 
 function handleCors(req, res) {
   let isCorsHandled = false;

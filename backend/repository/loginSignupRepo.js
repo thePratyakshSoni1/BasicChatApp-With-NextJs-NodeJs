@@ -1,9 +1,9 @@
 const { getUser } = require("./usersRepo")
-const { decryptData } = require("../rsaGo")
+const { decryptData } = require("../utils/rsaGo")
 const file =  require("fs")
 function verifyLoginCredentials(pathToUserData ,userId, password){
 
-  let loginKeys = JSON.parse(file.readFileSync("./serverValues.json")).loginKeys
+  let loginKeys = JSON.parse(file.readFileSync("./utils/serverValues.json")).loginKeys
   let user = getUser(pathToUserData, decryptData(userId, loginKeys.privateKey, loginKeys.modulous))
   console.log("Decrypted: ", decryptData(userId, loginKeys.privateKey, loginKeys.modulous))
   let isAuthenticated = false
