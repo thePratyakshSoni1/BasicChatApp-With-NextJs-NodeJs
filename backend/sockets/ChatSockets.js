@@ -45,7 +45,7 @@ class WebSocketServer extends EventEmitter {
     this.init();
     this.GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
     this.OPCODES = { text: 0x01, close: 0x08 };
-    this.connctions = []; // { chatSessionId:string, userId: string, connectedAt: Date }[]
+    this.connections = []; // { chatSessionId:string, userId: string, connectedAt: Date }[]
   }
 
   async init() {
@@ -61,106 +61,133 @@ class WebSocketServer extends EventEmitter {
       res.end(body);
     });
 
-    this.server.on(`upgrade`, (req, socket) => {
-      console.log("Upgrade req received...");
-      this.emit("headers", req);
-      console.log("Cooks: ", req.headers.cookie);
-      if (req.headers.upgrade !== "websocket") {
-        socket.end("HTTP/1.1 400 Bad Request");
-        return;
-      } else {
-        if (
-          req.headers.cookie &&
-          verifyLoginCookies(req.headers.cookie.split("; ")).isVerified
-        ) {
-          console.log("Is verified and logged user");
-          let socketFood = extractCookiesFromReq(req.headers.cookie);
+    this.server.on(`upgrade`, (req, socket) => this.onConnectionUpgradeReq(req, socket));
+  }
+  
 
-          this.connctions.push({
-            chatSessionId: socketFood.chatSession,
-            userId: socketFood.userId,
-            connectedAt: new Date(),
-          });
+  onConnectionUpgradeReq(req, socket) {
+    console.log("Upgrade req received...");
+    this.emit("headers", req);
+    console.log("Cooks: ", req.headers.cookie);
 
-          console.log("Connections now: ", this.connctions);
+    if (this.isVerifiedClientSocketReq(req)) {
 
-          new Promise(async (ros, rej) => {
-            let isConnected = true;
+      console.log("Is verified and logged user");
+      let socketFood = extractCookiesFromReq(req.headers.cookie);
+      this.addNewConnectionToList(socketFood);
+      this.checkLiveSocketUpdates(socket, socketFood);
+      console.log("Out of promise callback");
 
-            socket.on("error", (e) => {
-              console.log(
-                "Uncaught Socket error on: ",
-                socketFood.userId,
-                e.name
-              );
-              this.emit("closeReq", socketFood.userId);
-            });
+    } else {
+      socket.end("HTTP/1.1 400 Bad Request");
+      return;
+    }
 
-            new Promise(async (res, rej) => {
-              let lastUpdated = undefined;
-              this.on("closeReq", () => {
-                console.log("Closing socket: ", socketFood.userId);
-                console.log("Closing socket: ", socketFood.userId);
-                isConnected = false;
-                ros();
-              });
+    this.sendUpgradeConnectionResponse(socket, req);
+    this.addSocketEventListeners(socket);
 
-              while (isConnected) {
-                await sleep();
-                var sameUserSockets = this.connctions.filter((it) => {
-                  return it.userId === socketFood.userId;
-                });
-                // if()
+  }
 
-                console.log("RADHE RADHE: ", socketFood.userId);
-                let updates = await getChatsUpdateAfter(
-                  socketFood.userId,
-                  lastUpdated
-                );
+  isVerifiedClientSocketReq(req) {
 
-                if (updates) {
-                  lastUpdated = updates.lastUpdated;
+    let isVerifiedLoggedUser =  req.headers.cookie && verifyLoginCookies(req.headers.cookie.split("; ")).isVerified
 
-                  socket.write(this.createFrame(updates));
-                } else {
-                  console.log("No updates...");
-                }
-              }
-              res();
-            }).then(() => console.log("While loop settled"));
-          }).then(() => console.log("Callback state settled"));
+    if (req.headers.upgrade !== "websocket") {
+      return false;
+    } else if (!isVerifiedLoggedUser) {
+      return false;
+    }
 
-          console.log("Out of promise callback");
+    return true;
+  }
+
+  addNewConnectionToList(socketFood) {
+    this.connections.push({
+      chatSessionId: socketFood.chatSession,
+      userId: socketFood.userId,
+      connectedAt: new Date(),
+    });
+    console.log("Connections now: ", this.connections);
+  }
+
+  sendUpgradeConnectionResponse(socket, req) {
+    const acceptKey = req.headers["sec-websocket-key"];
+    const acceptValue = this.generateAcceptValue(acceptKey);
+
+    const responseHeaders = [
+      "HTTP/1.1 101 Switching Protocols",
+      "Upgrade: websocket",
+      "Connection: Upgrade",
+      `Sec-WebSocket-Accept: ${acceptValue}`,
+    ];
+
+    console.log("Writing Upgrade resp...");
+    socket.write(responseHeaders.concat("\r\n").join("\r\n"));
+  }
+
+  checkLiveSocketUpdates(socket, socketFood) {
+    new Promise(async (resCloseUserSocket, rejCloseUserSocket) => {
+
+      this.listenToUserMessageUpdates(socket, socketFood, resCloseUserSocket)
+
+      socket.on("error", (e) => {
+        console.log("Uncaught Socket error on: ", socketFood.userId, e.name);
+        this.emit("closeReq", socketFood.userId);
+      });
+
+      
+    }).then(() => console.log("Callback state settled"));
+  }
+
+  listenToUserMessageUpdates(socket, socketFood, onListenerClose){
+
+    let isConnected = true;
+    new Promise(async (resStoplistenning, rejStoplistenning) => {
+
+      let lastUpdated = undefined;
+      this.on("closeReq", () => {
+        console.log("Closing socket: ", socketFood.userId);
+        console.log("Closing socket: ", socketFood.userId);
+        isConnected = false;
+        onListenerClose();
+      });
+
+      while (isConnected) {
+        await sleep();
+        var sameUserSockets = this.connections.filter((it) => {
+          return it.userId === socketFood.userId;
+        });
+
+        console.log("RADHE RADHE: ", socketFood.userId);
+        let updates = await getChatsUpdateAfter(
+          socketFood.userId,
+          lastUpdated
+        );
+
+        if (updates) {
+          lastUpdated = updates.lastUpdated;
+          socket.write(this.createFrame(updates));
         } else {
-          socket.end("HTTP/1.1 400 Bad Request");
-          return;
+          console.log("No updates...");
         }
       }
+      resStoplistenning();
 
-      const acceptKey = req.headers["sec-websocket-key"];
-      const acceptValue = this.generateAcceptValue(acceptKey);
+    }).then(() => console.log("Updates Listener settled: ", socketFood.userId));
 
-      const responseHeaders = [
-        "HTTP/1.1 101 Switching Protocols",
-        "Upgrade: websocket",
-        "Connection: Upgrade",
-        `Sec-WebSocket-Accept: ${acceptValue}`,
-      ];
+  }
 
-      console.log("Writing Upgrade resp...");
-      socket.write(responseHeaders.concat("\r\n").join("\r\n"));
+  addSocketEventListeners(socket) {
+    this.server.on("close", () => {
+      console.log("closing...", socket);
+      socket.destroy();
+    });
 
-      this.server.on("close", () => {
-        console.log("closing...", socket);
-        socket.destroy();
-      });
-
-      socket.on("data", (buffer) => {
-        console.log("socket on data received: ...", buffer.toString());
-        this.emit("data", this.parseFrame(buffer), (data) =>
-          socket.write(this.createFrame(data))
-        );
-      });
+    socket.on("data", (buffer) => {
+      console.log("socket on data received: ...", buffer.toString());
+      this.emit("data", this.parseFrame(buffer), (data) =>
+        socket.write(this.createFrame(data))
+      );
     });
   }
 
