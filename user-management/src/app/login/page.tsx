@@ -1,7 +1,7 @@
 import React from "react"
 import styles from "./log2/page.module.css"
 import http from "http"
-import fun, { generatePrimeNums, setKeys } from "../../../../backend/rsaGo"
+import { generatePrimeNums, setKeys } from "../../../../backend/utils/rsaGo"
 import LoginPage from "./loginPageUi"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"

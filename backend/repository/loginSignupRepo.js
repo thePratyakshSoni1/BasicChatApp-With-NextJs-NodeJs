@@ -8,7 +8,7 @@ function verifyLoginCredentials(pathToUserData ,userId, password){
   console.log("Decrypted: ", decryptData(userId, loginKeys.privateKey, loginKeys.modulous))
   let isAuthenticated = false
   if(!user.error){
-    isAuthenticated = ( decryptData(password, loginKeys.privateKey, loginKeys.modulous) === user.userData.password)
+    isAuthenticated = ( decryptData(password, loginKeys.privateKey, loginKeys.modulous) === user.userData.password )
   }
   return isAuthenticated
 }

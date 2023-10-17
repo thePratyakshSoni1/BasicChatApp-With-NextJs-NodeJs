@@ -1,6 +1,6 @@
 "use client"
 import React from "react"
-import styles from "./log2/page.module.css"
+import styles from "./page.module.css"
 import { useRouter } from "next/navigation"
 import Script from "next/script"
 import { onLogin } from "../../repositories/loginSignUpRepo"
@@ -16,8 +16,7 @@ export default function LoginPage(myKeys: { myKeys: { public: number, mod: numbe
     const [mailTxt, setMainTxt] = React.useState("")
     const [password, setPasswordTxt] = React.useState("")
     const [error, setError] = React.useState("")
-    const router = useRouter()
-
+    const router = useRouter() 
 
 
     return <>

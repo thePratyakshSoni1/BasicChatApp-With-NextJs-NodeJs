@@ -1,20 +1,9 @@
 {
-
-    "errorCodes": {
+    "backendRouteErrorCodes": {
         "DIFFERENT_KEY_ENCRYPTION": 0
     },
 
-    "loginCookies": {
-        "loginToken": "logToken",
-        "publicEncryptionKey": "enKey",
-        "userId": "userId",
-        "mod": "mod"
-    },
-
-    "backendUrl": "http://localhost:3100",
-    "frontendUrl": "http://localhost:3000",
-
-    "requestRoutes": {
+    "backendRoutes":  {
         "login": "/login",
         "generateLoginKey": "/gen-login/key",
         "addUser": "/addUser",
@@ -25,6 +14,8 @@
         "peoples": "/peoples",
         "getTextHistory": "/textHistory",
         "chatSocket": "/chatSocket"
-    }
+    },
+
+    "backendUrl": "http://localhost:3100"
 
 }
