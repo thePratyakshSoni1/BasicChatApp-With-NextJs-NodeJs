@@ -10,6 +10,7 @@ const {
   getChatsUpdateAfter,
   getSpecificChatHistory,
   getLastUpdate,
+  addNewTextToUser,
 } = require("../repository/chatsRepo");
 
 async function testWebSocket(callback) {
@@ -61,36 +62,35 @@ class WebSocketServer extends EventEmitter {
       res.end(body);
     });
 
-    this.server.on(`upgrade`, (req, socket) => this.onConnectionUpgradeReq(req, socket));
+    this.server.on(`upgrade`, (req, socket) =>
+      this.onConnectionUpgradeReq(req, socket)
+    );
   }
-  
 
   onConnectionUpgradeReq(req, socket) {
     console.log("Upgrade req received...");
     this.emit("headers", req);
     console.log("Cooks: ", req.headers.cookie);
+    let socketFood = extractCookiesFromReq(req.headers.cookie);
 
     if (this.isVerifiedClientSocketReq(req)) {
-
       console.log("Is verified and logged user");
-      let socketFood = extractCookiesFromReq(req.headers.cookie);
       this.addNewConnectionToList(socketFood);
       this.checkLiveSocketUpdates(socket, socketFood);
       console.log("Out of promise callback");
-
     } else {
       socket.end("HTTP/1.1 400 Bad Request");
       return;
     }
 
     this.sendUpgradeConnectionResponse(socket, req);
-    this.addSocketEventListeners(socket);
-
+    this.addSocketEventListeners(socket, socketFood.userId);
   }
 
   isVerifiedClientSocketReq(req) {
-
-    let isVerifiedLoggedUser =  req.headers.cookie && verifyLoginCookies(req.headers.cookie.split("; ")).isVerified
+    let isVerifiedLoggedUser =
+      req.headers.cookie &&
+      verifyLoginCookies(req.headers.cookie.split("; ")).isVerified;
 
     if (req.headers.upgrade !== "websocket") {
       return false;
@@ -127,23 +127,18 @@ class WebSocketServer extends EventEmitter {
 
   checkLiveSocketUpdates(socket, socketFood) {
     new Promise(async (resCloseUserSocket, rejCloseUserSocket) => {
-
-      this.listenToUserMessageUpdates(socket, socketFood, resCloseUserSocket)
+      this.listenToUserMessageUpdates(socket, socketFood, resCloseUserSocket);
 
       socket.on("error", (e) => {
         console.log("Uncaught Socket error on: ", socketFood.userId, e.name);
         this.emit("closeReq", socketFood.userId);
       });
-
-      
     }).then(() => console.log("Callback state settled"));
   }
 
-  listenToUserMessageUpdates(socket, socketFood, onListenerClose){
-
+  listenToUserMessageUpdates(socket, socketFood, onListenerClose) {
     let isConnected = true;
     new Promise(async (resStoplistenning, rejStoplistenning) => {
-
       let lastUpdated = undefined;
       this.on("closeReq", () => {
         console.log("Closing socket: ", socketFood.userId);
@@ -159,10 +154,7 @@ class WebSocketServer extends EventEmitter {
         });
 
         console.log("RADHE RADHE: ", socketFood.userId);
-        let updates = await getChatsUpdateAfter(
-          socketFood.userId,
-          lastUpdated
-        );
+        let updates = await getChatsUpdateAfter(socketFood.userId, lastUpdated);
 
         if (updates) {
           lastUpdated = updates.lastUpdated;
@@ -172,22 +164,27 @@ class WebSocketServer extends EventEmitter {
         }
       }
       resStoplistenning();
-
     }).then(() => console.log("Updates Listener settled: ", socketFood.userId));
-
   }
 
-  addSocketEventListeners(socket) {
+  addSocketEventListeners(socket, userId) {
     this.server.on("close", () => {
       console.log("closing...", socket);
       socket.destroy();
     });
 
     socket.on("data", (buffer) => {
+
       console.log("socket on data received: ...", buffer.toString());
-      this.emit("data", this.parseFrame(buffer), (data) =>
-        socket.write(this.createFrame(data))
+      this.emit(
+        "data",
+        this.parseFrame(buffer),
+        userId,
+        (data) => {
+          socket.write(this.createFrame(data));
+        }
       );
+
     });
   }
 
@@ -330,7 +327,7 @@ function activateChatSocket() {
     console.log("Headers Received: \n", headers)
   );
 
-  server.on("data", (message, reply) => {
+  server.on("data", (message, userId, reply ) => {
     if (!message) return;
 
     // console.log("Received for parsing; ", message);
@@ -338,9 +335,11 @@ function activateChatSocket() {
     if (data.isCloseReq) {
       console.log("GIT CLOSE REQ");
       server.emit("closeReq");
+    } else {
+      addNewTextToUser(userId, data);
     }
     console.log("Message received:", data);
-    return reply({ pong: data });
+    // return reply({ pong: data });
   });
 
   server.on("close", () => {

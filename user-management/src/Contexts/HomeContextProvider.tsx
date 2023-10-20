@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react"
 
 interface HomeContextType {
     socket: WebSocket | undefined
-    messages: undefined | { userId: string, lastUpdated: string, messages: { receiver: string, chat: { id: number, isSent: boolean, data: string, at: string }[] }[] }
+    messages: undefined | { userId: string, lastUpdated: string, messages: { person: string, chat: { id: number, isSent: boolean, data: string, at: string }[] }[] }
     initSocket: () => void
     sendMsg: (recepientId: string, msg: string) => void
 }
@@ -18,7 +18,7 @@ export function useHomeContext() {
 export default function HomeContextProvider({ children }: { children: React.ReactNode }) {
 
     const [chatSocket, setSocket] = useState<WebSocket | undefined>(undefined)
-    const [messages, setMessage] = useState<{ userId: string, lastUpdated: string, messages: { receiver: string, chat: { id: number, isSent: boolean, data: string, at: string }[] }[] }>()
+    const [messages, setMessage] = useState<{ userId: string, lastUpdated: string, messages: { person: string, chat: { id: number, isSent: boolean, data: string, at: string }[] }[] }>()
 
 
     const initSocket = () => {
@@ -34,7 +34,7 @@ export default function HomeContextProvider({ children }: { children: React.Reac
 
     const sendMessage = (recepiendId: string, msg: string) => {
         if (chatSocket) {
-            chatSocket.send(msg)
+            chatSocket.send(JSON.stringify({receiver: recepiendId, data: msg}))
         } else {
             console.log("Socket not initialized !")
         }

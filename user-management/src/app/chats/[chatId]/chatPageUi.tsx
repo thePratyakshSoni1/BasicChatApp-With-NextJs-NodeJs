@@ -77,8 +77,9 @@ export default function ChatPage({ food }: { food: string }) {
         console.log("Populating text history")
         let chatHistory: { id: number, isSent: boolean, data: string, at: string }[] = []
             chatSocket.messages?.messages.forEach((msgPayloads) => {
+                console.log("DEBUG: ", msgPayloads )
                 chatHistory =
-                msgPayloads.receiver.split("@")[0] === chatId
+                msgPayloads.person.split("@")[0] === chatId
                     ? msgPayloads.chat
                     : [];
             });
@@ -113,8 +114,9 @@ export default function ChatPage({ food }: { food: string }) {
 
     const onSend = () => {
         if(chatSocket.messages){
-            let toUpdate = { id: userTexts.length, isSent: true, data: msgField, at: (new Date()).toUTCString() }
-            setUserTexts([...userTexts, toUpdate])
+            // let toUpdate = { id: userTexts.length, isSent: true, data: msgField, at: (new Date()).toUTCString() }
+            // setUserTexts([...userTexts, toUpdate])
+            chatSocket.sendMsg(chatId.toString()+"@gmail.com", msgField)
             setMadFieldText("")
             // console.log(messages)
         }
