@@ -4,6 +4,7 @@ import styles from "./page.module.css"
 import { useRouter } from "next/navigation"
 import Script from "next/script"
 import { onLogin } from "../../repositories/loginSignUpRepo"
+import { frontendRoutes } from "../../utils/constants.json"
 
 // function ErrorComponent(item: { msg: string }) {
 //     if (item.msg !== "") {
@@ -47,6 +48,10 @@ export default function LoginPage(myKeys: { myKeys: { public: number, mod: numbe
                         setError
                     )
                 }}> LogIn</button>
+
+                <button className={styles.loginButton} id={styles.signupButton} onClick={() => {
+                    router.push(frontendRoutes.signup)
+                }}> Register</button>
 
             </div>
         </div >

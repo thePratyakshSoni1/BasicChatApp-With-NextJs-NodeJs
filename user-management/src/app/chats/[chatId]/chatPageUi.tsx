@@ -8,6 +8,7 @@ import http from "http"
 import { headers } from "next/headers"
 import Script from "next/script"
 import { useHomeContext } from "../../../Contexts/HomeContextProvider"
+import { sessionCookies } from "../../../utils/constants.json"
 
 function MessageChip({ msg, isSent }: { msg: string, isSent: boolean }) {
     if (isSent)
@@ -116,7 +117,11 @@ export default function ChatPage({ food }: { food: string }) {
         if(chatSocket.messages){
             // let toUpdate = { id: userTexts.length, isSent: true, data: msgField, at: (new Date()).toUTCString() }
             // setUserTexts([...userTexts, toUpdate])
-            chatSocket.sendMsg(chatId.toString()+"@gmail.com", msgField)
+            let userId = food.split(";").find((it)=>{
+                return it.split("=")[0] === sessionCookies.userId
+            })?.split("=")[1]
+            
+            chatSocket.currentReceiverId ? chatSocket.sendMsg(chatSocket.currentReceiverId, msgField) : router.back()
             setMadFieldText("")
             // console.log(messages)
         }

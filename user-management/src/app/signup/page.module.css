@@ -14,9 +14,9 @@
     align-items: center;
     background-color: white;
     border-radius: 14px;
-    height: fit-content;
+    height: 50vh;
     width: 85vw;
-    padding: 22px 14px;
+    padding: 14px;
     flex-flow: column;
     color:black;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -45,22 +45,14 @@
     border-radius: 12px;
     color: #fdc731;
     width: 40%;
-    margin-top: 1rem;
+    margin-top: 2rem;
     box-shadow: 4px 4px #fdc731;
 }
 
 .loginButton:active{
     margin-left: 8px;
-    margin-top: 16px;
+    margin-top: 32px;
     box-shadow: 2px 2px #fdc731;
-}
-
-#signupButton{
-    margin-bottom: 4px;
-    margin-top: 8px;
-    background-color: #fdc731;
-    color: black;
-    box-shadow: 4px 4px #3f2e00a6;
 }
 
 @media screen and (min-width: 800px){
@@ -91,8 +83,8 @@
         border-radius: 12px;
         color: #fdc731;
         width: 40%;
-        margin-top: 1rem;
-        box-shadow: 4px 4px #fdc731;
+        margin-top: 2rem;
+        box-shadow: 8px 8px #fdc731;
     }
 
     .loginButton:active{

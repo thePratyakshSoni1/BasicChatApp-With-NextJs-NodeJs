@@ -1,4 +1,4 @@
-const { decryptData } = require("../utils/rsaGo");
+const { decryptData, setKeys, generatePrimeNums } = require("../utils/rsaGo");
 
 const isUniqueUser = (user, relPathToUsersJsonFile) => {
   const file = require("fs");
@@ -20,30 +20,101 @@ const isUniqueUser = (user, relPathToUsersJsonFile) => {
   return isNewUniqueUser;
 };
 
-const addUser = (user, relPathToUsersJsonFile) => {
+function isNewUserValid(user){
+
+  if (user.password === "") {
+      return false
+  } else if (user.mail.split("@").length < 1 || user.mail.split(".com").length < 1 || user.mail === "") {
+      return false
+  } else {
+      return true
+  }
+
+}
+
+function addUser(user){
+  
+  let userToDBTask = addToUserDB(user)
+
+  if(userToDBTask.isSuccess){
+    return addToUserChatDB(user)
+  }else{
+    return userToDBTask
+  }
+
+}
+
+function addToUserChatDB(user) {
+
+  try {
+    let dataRead = JSON.parse(`{}`)
+    let file = require("fs")
+    dataRead = JSON.parse(file.readFileSync("./database/userData.json"))
+    dataRead.push(
+      {
+        userId: user.mail,
+        lastUpdated: (new Date()).toUTCString(),
+        messages: []
+      }
+    )
+
+    file.writeFileSync("./database/userData.json", JSON.stringify(dataRead))
+    return { isSuccess: true }
+  } catch (e) {
+    return { isSuccess: false, msg: e.message };
+  }
+
+}
+
+const addToUserDB = (user) => {
+  let relPathToUsersJsonFile = "./database/users.json"
   try {
     if (isUniqueUser(user, relPathToUsersJsonFile)) {
       let dataRead = JSON.parse("{}");
-      let file = require("fs");
-
+      let file = require("fs"); 
       dataRead = JSON.parse(
         file.readFileSync(relPathToUsersJsonFile).toString()
       );
+
+      let userKeys = setKeys(generatePrimeNums())
+
       dataRead.push({
         userId: user.mail,
         password: user.password,
+        mod:userKeys.mod,
+        publicKey: userKeys.public,
+        privateKey: userKeys.private,
+        loginToken: generateLoginToken(user.mail)
       });
 
       file.writeFileSync(relPathToUsersJsonFile, JSON.stringify(dataRead));
+      return { isSuccess: true }
+    } else {
+      throw new Error("User already exists");
     }
   } catch (e) {
-    return JSON.parse(`{
-                    "isUserAdded": false,
-                    "error": e.message
-                }`);
+    return {
+      isSuccess: false,
+      msg: e.message,
+    };
   }
 };
 
+function generateLoginToken(mail){
+  let genToken = `${(new Date()).getTime()}-${mail.split("@")[0]}${parseInt(Math.random() * 50000)}`
+  return btoa(genToken)
+}
+
+/**
+ * returns `{ 
+ *  mail: string, password: string, logToken: string, publicKey: number,
+    mod : number,
+    privateKey: number
+ }`
+
+ when error `{ error: boolean;
+    message: string; }`
+ */
 function getUser(relPathToUsersJsonFile, userId) {
   const file = require("fs");
 
@@ -113,7 +184,7 @@ function getTextHistory(userId, recepient, relPathToUsersTxtJsonFile) {
   });
 
   var sortedTexts = chatHistory.sort((a, b) => {
-    return (new Date(a.at)) <= (new Date(b.at)) ? -1 : 1;
+    return new Date(a.at) <= new Date(b.at) ? -1 : 1;
   });
 
   console.log("Requested history: ", sortedTexts);
@@ -126,4 +197,5 @@ module.exports = {
   getUser,
   getChatPeoples,
   getTextHistory,
+  isNewUserValid
 };

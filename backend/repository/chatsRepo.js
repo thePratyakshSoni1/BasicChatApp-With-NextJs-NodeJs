@@ -75,7 +75,7 @@ function addNewTextToUser(senderId, msg) {
 function addNewUserChat(userDataDoc, msg, senderId){
   let dateInst = new Date()
   let firstChat = { 
-      id: getUniqueMsgId(),
+      id: 0, //changed later
       data: msg.data,
       at: dateInst.toString(),
       isSent: false // edited later
@@ -83,13 +83,14 @@ function addNewUserChat(userDataDoc, msg, senderId){
 
   for( let i=0; i<userDataDoc.length; i++){
     if(userDataDoc[i].userId === senderId || userDataDoc[i].userId === msg.receiver){
+      console.log("Now updating: ", userDataDoc[i].userId)
       userDataDoc[i].messages.push(
         {
-          person: userDataDoc[i].userId === msg.receiver ? msg.receiver : senderId,
-          chat: [ {...firstChat, isSent: userDataDoc[i].userId === senderId} ]
+          person: userDataDoc[i].userId === msg.receiver ? senderId : msg.receiver,
+          chat: [ {id: getUniqueMsgId(), ...firstChat, isSent: userDataDoc[i].userId === senderId} ]
         }
       )
-      content[i].lastUpdated = dateInst.toString();
+      userDataDoc[i].lastUpdated = dateInst.toString();
     }
   }
 
@@ -107,7 +108,7 @@ function updateUserMessagesInFileContent(senderId, msg, content) {
       let messages = content[i].messages;
       let msgIndx = undefined;
 
-      var userChats =( messages.find((it, index) => {
+      var userChats = ( messages.find((it, index) => {
         msgIndx = index;
         return it.person === msg.receiver || it.person === senderId
       })).chat;
@@ -147,7 +148,7 @@ function getSenderAndReceiverTexts(fileContent, senderId, receiverId) {
       receiver = fileContent[i].messages.find((it) => {
         return it.person === senderId;
       });
-      isReceiverFound = false;
+      isReceiverFound = true;
     }
 
     if (isReceiverFound && isSenderFound) {

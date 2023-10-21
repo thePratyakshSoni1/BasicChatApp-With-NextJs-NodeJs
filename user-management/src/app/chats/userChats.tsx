@@ -35,6 +35,9 @@ export default function HomePage(
             chatsXhttpReq.onreadystatechange = function () {
                 if (this.readyState == 4 && this.status == 200) {
                     console.log("Chats: ", JSON.parse(chatsXhttpReq.responseText))
+                    if( JSON.parse(chatsXhttpReq.responseText).msg){
+                        router.push("/login")
+                    }
                     setPeoples(JSON.parse(chatsXhttpReq.responseText))
                 }
             };
@@ -54,7 +57,10 @@ export default function HomePage(
             </div>
             <div className={styles.chatList}>
                 {chats.map(it => {
-                    return <div key={it.mail} className={styles.chatItem} onClick={() => router.push(`/chats/${it.mail.split("@")[0]}`)}>
+                    return <div key={it.mail} className={styles.chatItem} onClick={() => {
+                        router.push(`/chats/${it.mail.split("@")[0]}`)
+                        chatSocket.setReceiver(it.mail)
+                    }}>
 
                         <Image src="https://i.pinimg.com/originals/ef/0d/ec/ef0dec7cb8b80b65ae925ccb9286f567.jpg"
                             alt="" width={24} height={24} />

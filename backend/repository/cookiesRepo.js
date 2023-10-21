@@ -55,7 +55,8 @@ function verifyLoginCookies(cookiesList) {
   });
 
   if (user != "" && user) {
-    isAuthenticUser = enKey == user.publicKey && logToken === user.loginToken;
+    console.log("User Verify: ", enKey, logToken)
+    isAuthenticUser = enKey == user.publicKey && (logToken === user.loginToken || logToken === user.loginToken.split("=")[0]);
     if (isAuthenticUser) return { isVerified: true };
     else {
       return { isVerified: false, message: "Invalid credentials found" };

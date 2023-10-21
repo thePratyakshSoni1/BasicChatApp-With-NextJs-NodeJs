@@ -1,6 +1,6 @@
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context";
 import { encryptData } from "./cryptographyRepo";
-import { backendRouteErrorCodes, backendRoutes, backendUrl } from "../utils/constants.json"
+import { backendRouteErrorCodes, backendRoutes, backendUrl, frontendRoutes } from "../utils/constants.json"
 
 export async function onLogin(
     headers: Headers,
@@ -16,7 +16,7 @@ export async function onLogin(
     headers.append('Content-Type', 'application/json')
     headers.append('Content-Length', `${JSON.stringify(data).length}`)
 
-    const response = await fetch('http://localhost:3100/login', {
+    const response = await fetch(backendUrl+backendRoutes.login, {
         method: "POST",
         credentials: 'include',
         headers: headers,
@@ -26,7 +26,7 @@ export async function onLogin(
     const json = await response.json();
     console.log(json)
     if (json.isSuccess) {
-        router.push("/chats")
+        router.push(frontendRoutes.chats)
     } else {
 
         if(json.errorCode == backendRouteErrorCodes.DIFFERENT_KEY_ENCRYPTION){
@@ -45,6 +45,42 @@ export async function onLogin(
         setError("Invalid login details")
 
     }
+
+}
+
+export async function onSignUp(
+    router: AppRouterInstance, mail: string, password: string, key: number, mod: number, headers: Headers, setError:(msg:string)=>void
+){
+    let data = JSON.stringify({ mail: encryptData(mail, key, mod), password: encryptData(password, key, mod), logEncKeyWithMod: `${key}${mod}` })
+    headers.append('Content-Type', 'application/json')
+    headers.append('Content-Length', `${JSON.stringify(data).length}`)
+
+    const signupReq = await fetch( backendUrl+backendRoutes.signup, {
+        method: "POST",
+        credentials: "include",
+        headers: headers,
+        body: data
+    } )
+
+    const resp = await signupReq.json()
+
+    if(resp.isSuccess){
+        router.push(frontendRoutes.chats)
+    }else if(resp.errorCode == backendRouteErrorCodes.DIFFERENT_KEY_ENCRYPTION){
+        console.log("Found Error: Old keys", resp.enKey, resp.mod)
+            onSignUp(
+                router,
+                mail,
+                password,
+                resp.enKey,
+                resp.mod,
+                headers,
+                setError
+            )
+    }else{
+        setError(resp.msg)
+    }
+    
 
 }
 
@@ -94,5 +130,5 @@ export async function onLogout(router: AppRouterInstance){
     })
     let resp = await logoutRequest.json()
     console.log("On logout", resp)
-    router.push("/login")
+    router.push(frontendRoutes.login)
 }

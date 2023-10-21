@@ -5,7 +5,7 @@ const { setKeys, generatePrimeNums } = require("./utils/rsaGo");
 const { handleCors } = require("./utils/corsRequestHandler");
 const { extractCookiesFromReq } = require("./repository/cookiesRepo");
 const { activateChatSocket } = require("./sockets/ChatSockets");
-const loginRouteController = require("./controller/login");
+const { loginRouteController, signupRouteController } = require("./controller/loginSignup");
 const loginCookieAuthController = require("./controller/verifyLoginCookies");
 const genEncKeysRouteController = require("./controller/generateLoginKey");
 const peoplesRouteController = require("./controller/peoples");
@@ -36,6 +36,10 @@ const httpServer = http.createServer(async (req, res) => {
 
       case requestRoutes.login:
         loginRouteController(req, res, serverValues.loginKeys)
+        break;
+      
+      case requestRoutes.signup:
+        signupRouteController(req, res, serverValues.loginKeys)
         break;
 
       case requestRoutes.verifyLoginCookies:
