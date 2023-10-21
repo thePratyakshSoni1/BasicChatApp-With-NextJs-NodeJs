@@ -28,7 +28,7 @@ function sleep() {
   return new Promise((reo, rjo) => {
     setTimeout(() => {
       reo();
-    }, 4000);
+    }, 2000);
   });
 }
 
@@ -47,6 +47,7 @@ class WebSocketServer extends EventEmitter {
     this.GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
     this.OPCODES = { text: 0x01, close: 0x08 };
     this.connections = []; // { chatSessionId:string, userId: string, connectedAt: Date }[]
+    this.connectionsCount = 0;
   }
 
   async init() {
@@ -75,6 +76,7 @@ class WebSocketServer extends EventEmitter {
 
     if (this.isVerifiedClientSocketReq(req)) {
       console.log("Is verified and logged user");
+      this.connectionsCount = this.connectionsCount + 1
       this.addNewConnectionToList(socketFood);
       this.checkLiveSocketUpdates(socket, socketFood);
       console.log("Out of promise callback");
@@ -107,7 +109,7 @@ class WebSocketServer extends EventEmitter {
       userId: socketFood.userId,
       connectedAt: new Date(),
     });
-    console.log("Connections now: ", this.connections);
+    console.log("Connections now: ", this.connections,":: ",this.connectionsCount);
   }
 
   sendUpgradeConnectionResponse(socket, req) {
@@ -144,6 +146,7 @@ class WebSocketServer extends EventEmitter {
         console.log("Closing socket: ", socketFood.userId);
         console.log("Closing socket: ", socketFood.userId);
         isConnected = false;
+        this.connectionsCount = this.connectionsCount-1
         onListenerClose();
       });
 

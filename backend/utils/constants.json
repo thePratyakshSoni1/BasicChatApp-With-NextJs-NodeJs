@@ -1,7 +1,8 @@
 {
 
     "errorCodes": {
-        "DIFFERENT_KEY_ENCRYPTION": 0
+        "DIFFERENT_KEY_ENCRYPTION": 0,
+        "AUTH_DENEID": 1
     },
 
     "loginCookies": {
@@ -25,7 +26,8 @@
         "logout": "/logout",
         "peoples": "/peoples",
         "getTextHistory": "/textHistory",
-        "chatSocket": "/chatSocket"
+        "chatSocket": "/chatSocket",
+        "getUser": "/getUser"
     }
 
 }

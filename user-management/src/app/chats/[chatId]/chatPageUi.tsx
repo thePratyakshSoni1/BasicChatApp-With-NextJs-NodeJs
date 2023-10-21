@@ -9,6 +9,7 @@ import { headers } from "next/headers"
 import Script from "next/script"
 import { useHomeContext } from "../../../Contexts/HomeContextProvider"
 import { sessionCookies } from "../../../utils/constants.json"
+import { getIdFromUserName } from "@/repositories/userRepo"
 
 function MessageChip({ msg, isSent }: { msg: string, isSent: boolean }) {
     if (isSent)
@@ -50,7 +51,7 @@ function MenuOptions(
         <div ref={optRef} id={styles.dropDownMenu} onMouseLeave={hideMenu} >
             <ul >
                 {items.menuItems.map((it, index) => {
-                    return <li key = {index} onClick={it.onclick}>{it.name}</li>
+                    return <li key={index} onClick={it.onclick}>{it.name}</li>
                 })}
             </ul>
         </div>
@@ -74,56 +75,62 @@ export default function ChatPage({ food }: { food: string }) {
 
     const chatSocket = useHomeContext()
 
-    const updateUserTexts = ()=>{
+    const updateUserTexts = () => {
         console.log("Populating text history")
         let chatHistory: { id: number, isSent: boolean, data: string, at: string }[] = []
-            chatSocket.messages?.messages.forEach((msgPayloads) => {
-                console.log("DEBUG: ", msgPayloads )
-                chatHistory =
-                msgPayloads.person.split("@")[0] === chatId
-                    ? msgPayloads.chat
-                    : [];
-            });
+        let userChats = chatSocket.messages?.messages.find((msgPayloads) => {
+            console.log("on: ", msgPayloads.person)
+            return msgPayloads.person.split("@")[0] === chatId
+        });
 
-            var sortedTexts = chatHistory.sort((a, b) => {
-                return (new Date(a.at)) <= (new Date(b.at)) ? -1 : 1;
-            });
-            setUserTexts(sortedTexts)
+        console.log("current page msg: ", userChats)
+        chatHistory =
+            userChats ? userChats.chat : [];
+
+        var sortedTexts = chatHistory.sort((a, b) => {
+            return (new Date(a.at)) <= (new Date(b.at)) ? -1 : 1;
+        });
+        setUserTexts(sortedTexts)
     }
 
     useEffect(() => {
 
-        updateUserTexts()
+        if(chatSocket.currentReceiverId === undefined){
+            getIdFromUserName(`${chatId}`).then((it)=>{
+                chatSocket.setReceiver(it)
+                console.log("Receiver hardset: ", it)
+            })
+        }
 
-        window.addEventListener('beforeunload', (beforeUnloadEvent)=>{
+        if(chatSocket.messages?.messages && chatSocket.messages?.messages.length > 1){
+            console.log("Load lodaded hist: ",chatSocket.messages?.messages.length)
+            updateUserTexts()
+        }
+
+        window.addEventListener('beforeunload', (beforeUnloadEvent) => {
             console.log("Changing nwMethod")
+            chatSocket.socket?.close()
             alert("Changin...aAaaAAaaAAAA")
             return "Changin...aAaaAAaaAAAA"
         })
 
     }, [true])
 
-    useEffect(updateUserTexts, [chatSocket?.messages, chatId])
+    useEffect(updateUserTexts, [chatSocket?.messages?.messages])
 
-    
+
     useEffect(
         () => {
-            console.log("Now updates: ", userTexts)
             chatList.current?.scrollBy(0, chatList.current.scrollHeight)
+            console.log("Now updates: ", userTexts)
+            setTimeout(()=> chatList.current?.scrollBy(0, chatList.current.scrollHeight), 400)
         }, [userTexts]
     )
 
     const onSend = () => {
-        if(chatSocket.messages){
-            // let toUpdate = { id: userTexts.length, isSent: true, data: msgField, at: (new Date()).toUTCString() }
-            // setUserTexts([...userTexts, toUpdate])
-            let userId = food.split(";").find((it)=>{
-                return it.split("=")[0] === sessionCookies.userId
-            })?.split("=")[1]
-            
+        if (chatSocket.messages) {
             chatSocket.currentReceiverId ? chatSocket.sendMsg(chatSocket.currentReceiverId, msgField) : router.back()
             setMadFieldText("")
-            // console.log(messages)
         }
     }
 
@@ -141,7 +148,7 @@ export default function ChatPage({ food }: { food: string }) {
                 src="https://i.pinimg.com/originals/ef/0d/ec/ef0dec7cb8b80b65ae925ccb9286f567.jpg"
                 alt="" width={24} height={24}
             />
-            <div id={styles.personName}>{chatId}</div>
+            <div id={styles.personName}>{chatId.toString()}</div>
 
             <MenuOptions
                 menuItems={[
@@ -158,7 +165,7 @@ export default function ChatPage({ food }: { food: string }) {
 
             <section ref={chatList} className={styles.chatSection} onChange={(ev) => { }}>
                 {
-                    userTexts.map((it) => {
+                    userTexts.map((it, indx) => {
                         return <MessageChip key={it.id} msg={it.data} isSent={it.isSent} />
                     })
                 }

@@ -24,7 +24,8 @@
         "logout": "/logout",
         "peoples": "/peoples",
         "getTextHistory": "/textHistory",
-        "chatSocket": "/chatSocket"
+        "chatSocket": "/chatSocket",
+        "getUser": "/getUser"
     },
 
     "sessionCookies":{
