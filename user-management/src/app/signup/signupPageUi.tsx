@@ -1,6 +1,6 @@
 "use client"
 import React from "react"
-import styles from "./page.module.css"
+import styles from "../login/page.module.css"
 import { useRouter } from "next/navigation"
 import Script from "next/script"
 import { onSignUp } from "@/repositories/loginSignUpRepo"

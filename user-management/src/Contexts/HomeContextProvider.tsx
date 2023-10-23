@@ -10,7 +10,13 @@ interface HomeContextType {
 }
 
 const HomeContext = createContext<HomeContextType>(
-    { currentReceiverId: undefined, socket: undefined, sendMsg: (recepientId = "NONE", msg = "NONE") => { }, initSocket: () => { }, messages: undefined, setReceiver: (receiverId = "NONE") => { } }
+    {
+        currentReceiverId: undefined,
+        socket: undefined,
+        sendMsg: (recepientId = "NONE", msg = "NONE") => { },
+        initSocket: () => { }, messages: undefined,
+        setReceiver: (receiverId = "NONE") => { }
+    }
 )
 
 export function useHomeContext() {
@@ -21,7 +27,7 @@ export default function HomeContextProvider({ children }: { children: React.Reac
 
     const [chatSocket, setSocket] = useState<WebSocket | undefined>(undefined)
     const [messages, setMessage] = useState<{ userId: string, lastUpdated: string, messages: { person: string, chat: { id: number, isSent: boolean, data: string, at: string }[] }[] }>()
-    const [currentReceiver, setReceiver] = useState<string|undefined>(undefined)
+    const [currentReceiver, setReceiver] = useState<string | undefined>(undefined)
 
     const initSocket = () => {
         if (chatSocket && chatSocket?.readyState === chatSocket?.OPEN) {
@@ -67,14 +73,14 @@ export default function HomeContextProvider({ children }: { children: React.Reac
         }
     }, [chatSocket])
 
-    return <HomeContext.Provider value={{ 
-        currentReceiverId: currentReceiver, 
-        socket: chatSocket, 
-        messages: messages, 
-        sendMsg: sendMessage, 
-        initSocket: initSocket, 
-        setReceiver: setReceiver 
-        }}>
+    return <HomeContext.Provider value={{
+        currentReceiverId: currentReceiver,
+        socket: chatSocket,
+        messages: messages,
+        sendMsg: sendMessage,
+        initSocket: initSocket,
+        setReceiver: setReceiver
+    }}>
         {children}
     </HomeContext.Provider>
 }

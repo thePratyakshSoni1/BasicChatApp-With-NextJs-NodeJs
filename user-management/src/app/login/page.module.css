@@ -1,6 +1,6 @@
 .loginBG{
     align-items: center;
-    background-color: #fdc731;
+    background-color: #ffffff;
     width: 100vw;
     height: 100vh;
     display: flex;
@@ -12,7 +12,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: white;
+    background-color: #479dff;
     border-radius: 14px;
     height: fit-content;
     width: 85vw;
@@ -20,33 +20,38 @@
     flex-flow: column;
     color:black;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    border-style: none;
+    border-style: solid;
+    border-color: black;
     box-shadow: 8px 8px rgb(0, 0, 0);
 }
 
 .txtField{
-    background-color: #fdc73165;
+    background-color: #ffffff;
     color: black;
     width: 80%;
     padding: 10px;
     font-size: 1.1rem;
     border-radius: 8px;
-    border-style: none;
+    border-style: solid;
     margin: 4px;
+    box-shadow: 2px 2px black;
+    border-color: black;
+
 }
 
 .loginButton{
-    background-color: black;
+    background: linear-gradient(120deg, #ffffff, #5c82ad);
     padding: 12px;
     margin: 4px;
     font-size: 1.1rem;
     font-weight: bold;
-    border-style: none;
+    border-style: solid;
     border-radius: 12px;
-    color: #fdc731;
+    color: #000000;
     width: 40%;
     margin-top: 1rem;
-    box-shadow: 4px 4px #fdc731;
+    box-shadow: 4px 4px #000000;
+    border-color: black;
 }
 
 .loginButton:active{
@@ -58,9 +63,9 @@
 #signupButton{
     margin-bottom: 4px;
     margin-top: 8px;
-    background-color: #fdc731;
-    color: black;
-    box-shadow: 4px 4px #3f2e00a6;
+    background: #ffbd6c;
+    color: rgb(0, 0, 0);
+    box-shadow: 4px 4px #000000;
 }
 
 @media screen and (min-width: 800px){
@@ -70,33 +75,26 @@
 
     
     .txtField{
-        background-color: #fdc73165;
-        color: black;
         width: 80%;
         padding: 14px;
         font-size: 1.1rem;
         border-radius: 12px;
-        border-style: none;
         margin: 6px;
     }
 
 
     .loginButton{
-        background-color: black;
         padding: 14px;
         margin: 4px;
         font-size: 1.1rem;
         font-weight: bold;
-        border-style: none;
-        border-radius: 12px;
-        color: #fdc731;
         width: 40%;
         margin-top: 1rem;
-        box-shadow: 4px 4px #fdc731;
+        box-shadow: 4px 4px #000000;
     }
 
     .loginButton:active{
-        box-shadow: 4px 4px #fdc731;
+        box-shadow: 4px 4px black;
     }
 
 } 

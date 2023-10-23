@@ -24,11 +24,11 @@ async function testWebSocket(callback) {
   });
 }
 
-function sleep() {
+function sleep(mills) {
   return new Promise((reo, rjo) => {
     setTimeout(() => {
       reo();
-    }, 2000);
+    }, mills);
   });
 }
 
@@ -43,15 +43,19 @@ class WebSocketServer extends EventEmitter {
   constructor(options = {}) {
     super();
     this.port = options.port || 3200;
-    this.init();
     this.GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
     this.OPCODES = { text: 0x01, close: 0x08 };
     this.connections = []; // { chatSessionId:string, userId: string, connectedAt: Date }[]
-    this.connectionsCount = 0;
+    this.connectionsAdded = 0;
+    this.connectionsClosed = 0;
+    this.isShowingSocketHealth = true
+    this.init();
   }
 
   async init() {
     if (this.server) throw new Error(`Server already initialized`);
+
+    this.timelyShowSocketConditionLogs()
 
     this.server = http.createServer((req, res) => {
       const UPGRADE_REQ_CODE = 426;
@@ -76,7 +80,7 @@ class WebSocketServer extends EventEmitter {
 
     if (this.isVerifiedClientSocketReq(req)) {
       console.log("Is verified and logged user");
-      this.connectionsCount = this.connectionsCount + 1
+      this.connectionsAdded = this.connectionsAdded + 1;
       this.addNewConnectionToList(socketFood);
       this.checkLiveSocketUpdates(socket, socketFood);
       console.log("Out of promise callback");
@@ -109,7 +113,13 @@ class WebSocketServer extends EventEmitter {
       userId: socketFood.userId,
       connectedAt: new Date(),
     });
-    console.log("Connections now: ", this.connections,":: ",this.connectionsCount);
+    console.log(
+      "Connections now: ",
+      this.connectionsAdded + this.connectionsClosed,
+      "\n====",
+      this.connections,
+      "\n===="
+    );
   }
 
   sendUpgradeConnectionResponse(socket, req) {
@@ -138,6 +148,23 @@ class WebSocketServer extends EventEmitter {
     }).then(() => console.log("Callback state settled"));
   }
 
+  async timelyShowSocketConditionLogs() {
+    new Promise(async (res, rej)=>{
+      while(this.isShowingSocketHealth){
+        console.log(
+          "\n====\n",
+          "Connections now: \n",
+          this.connectionsAdded + this.connectionsClosed,
+          this.connections,
+          "\n===="
+        )
+        await sleep(15*1000)
+      }
+      console.log("Stopping health logs")
+      res()
+    })
+  }
+
   listenToUserMessageUpdates(socket, socketFood, onListenerClose) {
     let isConnected = true;
     new Promise(async (resStoplistenning, rejStoplistenning) => {
@@ -146,24 +173,23 @@ class WebSocketServer extends EventEmitter {
         console.log("Closing socket: ", socketFood.userId);
         console.log("Closing socket: ", socketFood.userId);
         isConnected = false;
-        this.connectionsCount = this.connectionsCount-1
+        this.connectionsClosed = this.connectionsClosed - 1;
         onListenerClose();
       });
 
       while (isConnected) {
-        await sleep();
+        await sleep(2000);
         var sameUserSockets = this.connections.filter((it) => {
           return it.userId === socketFood.userId;
         });
 
-        console.log("RADHE RADHE: ", socketFood.userId);
         let updates = await getChatsUpdateAfter(socketFood.userId, lastUpdated);
 
         if (updates) {
           lastUpdated = updates.lastUpdated;
           socket.write(this.createFrame(updates));
         } else {
-          console.log("No updates...");
+          // console.log("No updates...");
         }
       }
       resStoplistenning();
@@ -172,22 +198,16 @@ class WebSocketServer extends EventEmitter {
 
   addSocketEventListeners(socket, userId) {
     this.server.on("close", () => {
+      this.isShowingSocketHealth = false
       console.log("closing...", socket);
       socket.destroy();
     });
 
     socket.on("data", (buffer) => {
-
       console.log("socket on data received: ...", buffer.toString());
-      this.emit(
-        "data",
-        this.parseFrame(buffer),
-        userId,
-        (data) => {
-          socket.write(this.createFrame(data));
-        }
-      );
-
+      this.emit("data", this.parseFrame(buffer), userId, (data) => {
+        socket.write(this.createFrame(data));
+      });
     });
   }
 
@@ -330,7 +350,7 @@ function activateChatSocket() {
     console.log("Headers Received: \n", headers)
   );
 
-  server.on("data", (message, userId, reply ) => {
+  server.on("data", (message, userId, reply) => {
     if (!message) return;
 
     // console.log("Received for parsing; ", message);

@@ -8,7 +8,7 @@ import http from "http"
 import { headers } from "next/headers"
 import Script from "next/script"
 import { useHomeContext } from "../../../Contexts/HomeContextProvider"
-import { sessionCookies } from "../../../utils/constants.json"
+import { sessionCookies, frontendRoutes } from "../../../utils/constants.json"
 import { getIdFromUserName } from "@/repositories/userRepo"
 
 function MessageChip({ msg, isSent }: { msg: string, isSent: boolean }) {
@@ -73,12 +73,12 @@ export default function ChatPage({ food }: { food: string }) {
 
     const router = useRouter()
 
-    const chatSocket = useHomeContext()
+    const homeContext = useHomeContext()
 
     const updateUserTexts = () => {
         console.log("Populating text history")
         let chatHistory: { id: number, isSent: boolean, data: string, at: string }[] = []
-        let userChats = chatSocket.messages?.messages.find((msgPayloads) => {
+        let userChats = homeContext.messages?.messages.find((msgPayloads) => {
             console.log("on: ", msgPayloads.person)
             return msgPayloads.person.split("@")[0] === chatId
         });
@@ -95,41 +95,41 @@ export default function ChatPage({ food }: { food: string }) {
 
     useEffect(() => {
 
-        if(chatSocket.currentReceiverId === undefined){
-            getIdFromUserName(`${chatId}`).then((it)=>{
-                chatSocket.setReceiver(it)
+        if (homeContext.currentReceiverId === undefined) {
+            getIdFromUserName(`${chatId}`).then((it) => {
+                homeContext.setReceiver(it)
                 console.log("Receiver hardset: ", it)
             })
         }
 
-        if(chatSocket.messages?.messages && chatSocket.messages?.messages.length > 1){
-            console.log("Load lodaded hist: ",chatSocket.messages?.messages.length)
+        if (homeContext.messages?.messages && homeContext.messages?.messages.length > 1) {
+            console.log("Load lodaded hist: ", homeContext.messages?.messages.length)
             updateUserTexts()
         }
 
         window.addEventListener('beforeunload', (beforeUnloadEvent) => {
             console.log("Changing nwMethod")
-            chatSocket.socket?.close()
+            homeContext.socket?.close()
             alert("Changin...aAaaAAaaAAAA")
             return "Changin...aAaaAAaaAAAA"
         })
 
     }, [true])
 
-    useEffect(updateUserTexts, [chatSocket?.messages?.messages])
+    useEffect(updateUserTexts, [homeContext?.messages?.messages])
 
 
     useEffect(
         () => {
             chatList.current?.scrollBy(0, chatList.current.scrollHeight)
             console.log("Now updates: ", userTexts)
-            setTimeout(()=> chatList.current?.scrollBy(0, chatList.current.scrollHeight), 400)
+            setTimeout(() => chatList.current?.scrollBy(0, chatList.current.scrollHeight), 400)
         }, [userTexts]
     )
 
     const onSend = () => {
-        if (chatSocket.messages) {
-            chatSocket.currentReceiverId ? chatSocket.sendMsg(chatSocket.currentReceiverId, msgField) : router.back()
+        if (homeContext.messages) {
+            homeContext.currentReceiverId ? homeContext.sendMsg(homeContext.currentReceiverId, msgField) : router.back()
             setMadFieldText("")
         }
     }
@@ -140,28 +140,35 @@ export default function ChatPage({ food }: { food: string }) {
         }
     }
 
+    const onBackButton = ()=>{
+        router.push("/chats")
+    }
+
 
     return <section className={styles.chatInterfaceBody} onClick={handleOptionsVisibility}>
-        <section className={styles.pageTopBar}>
-
-            <Image id={styles.personPic}
-                src="https://i.pinimg.com/originals/ef/0d/ec/ef0dec7cb8b80b65ae925ccb9286f567.jpg"
-                alt="" width={24} height={24}
-            />
-            <div id={styles.personName}>{chatId.toString()}</div>
-
-            <MenuOptions
-                menuItems={[
-                    { name: "Settings", onclick: () => { console.log("To Settings") } },
-                    { name: "Info", onclick: () => { console.log("To user info") } },
-                    { name: "Logout", onclick: () => { onLogout(router) } }
-                ]}
-                isOptionVisible={isOptionsVisible} setOptionsState={setOptionsVisible}
-            />
-        </section>
-
         <section className={styles.chatBox}>
 
+        <section className={styles.topBarContainer}>
+            
+            <div className={styles.pageTopBar}>
+                <Image id={styles.goBackBtn} onClick={onBackButton} width="24" height="24" src="https://img.icons8.com/material-sharp/24/000000/left.png" alt="go back" />
+
+                <Image id={styles.personPic}
+                    src="https://i.pinimg.com/originals/ef/0d/ec/ef0dec7cb8b80b65ae925ccb9286f567.jpg"
+                    alt="" width={24} height={24}
+                />
+                <div id={styles.personName}>{chatId.toString()}</div>
+
+                <MenuOptions
+                    menuItems={[
+                        { name: "Settings", onclick: () => { console.log("To Settings") } },
+                        { name: "Info", onclick: () => { console.log("To user info") } },
+                        { name: "Logout", onclick: () => { onLogout(router) } }
+                    ]}
+                    isOptionVisible={isOptionsVisible} setOptionsState={setOptionsVisible}
+                />
+            </div>
+        </section>
 
             <section ref={chatList} className={styles.chatSection} onChange={(ev) => { }}>
                 {

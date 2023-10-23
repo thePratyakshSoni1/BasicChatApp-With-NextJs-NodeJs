@@ -7,7 +7,7 @@
 .chatInterfaceBody{
     width: 100vw;
     height: 100vh;
-    background-color: #fdc731;
+    background-color: #ffffff;
     display: flex;
     align-items: center;
     flex-direction: column;
@@ -15,7 +15,7 @@
 }
 
 .chatBox{    
-    background-color: #c2b1ff;
+    background: linear-gradient(120deg, #a7d0ff, #043975);
     border-radius: 16px;
     border-style: none;
     flex-flow: column;
@@ -23,13 +23,15 @@
     width: 80vw;
     align-items: stretch;
     height: 80vh;
-    box-shadow: 10px 10px black;
+    box-shadow: 6px 6px black;
     flex-direction: column;
     justify-content: flex-end;
+    border-style: solid;
+    border-color: black;
 }
 
 .sendButton{
-    background-color: #fdc731;
+    background: #48ff66;
     border-radius: 100px;
     border-style: none;
     color: white;
@@ -40,9 +42,12 @@
     font-weight: bold;
 }
 
+.sendButton:active{
+    box-shadow: 0px 0px black;
+    margin-top: 4px;
+}
+
 .chatSection{
-    border-radius: 16px 16px 0px 0px;
-    background-color: #c2b1ff;
     height: inherit;
     width: 100%;
     display: flex;
@@ -51,6 +56,7 @@
     padding-top: 12px;
     overflow-y: scroll;
     -ms-overflow-style: none;
+
 }
 
 .actionSection{
@@ -59,9 +65,12 @@
     max-height: 14%;
     display: flex;
     flex-flow: row;
+    justify-content: center;
     align-items: center;
-    background-color: #191539;
-    border-radius: 16px 16px;
+    background-color: #002ec7;
+    border-radius: 0px 0px 12px 12px;
+    border-top-style: solid;
+    border-color: black;
 }
 
 .msgTextField{
@@ -71,18 +80,25 @@
     color: black;
     border-style: none;
     height: 60%;
-    margin: 8px 8px 12px 12px;
+    margin: 12px 8px 12px 0px;
     padding-left: 21px;
     font-size: 1.15rem;
     box-shadow: 4px 4px black;
 }
+
+
+.msgTextField:active{
+    box-shadow: 0px 0px black;
+    margin-top: 16px;
+}
+
 
 .msgContainer{
     width: 100%;
 }
 
 .msgSent{    
-    background-color: #ffd35a;
+    background-color: #48ff66;
     width: fit-content;
     height: fit-content;
     min-height: 36px;
@@ -93,7 +109,8 @@
     justify-content: flex-end;
     padding: 12px;
     float: right;
-    box-shadow: 4px 4px #5c48a2;
+    color: black;
+    box-shadow: 4px 4px black;
     max-width: 80%;
     animation-name: messageSend;
     animation-duration: 0.35s;
@@ -103,16 +120,17 @@
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    background-color: #191539;
+    background-color: #ffffff;
     width: fit-content;
     max-width: 80%;
+    color: black;
     min-height: 36px;    
     height: fit-content;
     float: left;
     border-radius: 24px 24px 24px 0px;
     margin: 12px 12px 12px 8px;
     padding: 12px;
-    box-shadow: 4px 4px #7c5d08;
+    box-shadow: 4px 4px #000000;
     animation-name: messageSend;
     animation-duration: 0.35s;
 }
@@ -129,12 +147,13 @@
 
     width: 80vw;
     padding: 12px 14px;
-    background-color: white;
-    margin-bottom: 14px;
-    border-radius: 100rem;
-    box-shadow: 4px 4px #191539;
+    background: #ffffff;
+    position: relative;
+    border-radius: 12px 12px 0px 0px;
+    box-shadow: 2px 2px 8px black;
     display: flex;
     align-items: center;
+    border-style: solid;
 
 }
 
@@ -150,26 +169,38 @@
 }
 
 .menu li{
-    padding: 8px 12px;
+    padding: 6px 12px;
+    margin: 4px;
+    border-style: solid;
+    border-radius: 4px;
+    box-shadow: 1px 1px black;
 }
 
 .menu li:hover{
-    background-color: rgb(224, 224, 224);
+    background-color: black;
+    color: white;
+    border-color: black;
 }
 
 #dropDownMenu{
     width: 150px;
     background-color: #ffffff;
     position: absolute;
-    right: 16vw;
-    top: 77px;
+    right: 7vw;
+    top: 30px;
     display: none;
+    border-style: solid;
+    border-color: #000000;
+    border-radius: 8px;
+    box-shadow: 4px 4px rgba(0, 0, 0, 0.774);
 }
 
 #personPic{
-    width: 2rem;
-    height: 2rem;
-    clip-path: circle();
+    width: 2.3rem;
+    height: 2.3rem;
+    border-color: #000000;
+    border-style: solid;
+    border-radius: 100px;
 }
 
 #personName{
@@ -180,5 +211,34 @@
     width: 100%;
     margin-left: 1rem;
 }
+
+.topBarContainer{
+    display: flex;
+    align-items: center;
+    width: 100%;
+    /* padding: 12px; */
+    padding-bottom: 0px;
+}
+
+#goBackBtn{
+    height: 33px;
+    width: 33px;
+    padding: 4px;
+    border-style: solid;
+    border-color: black;
+    border-radius: 100px;
+    margin-right: 8px;
+    background-color: white;
+    box-shadow: 2px 2px #000000;
+
+}
+
+#goBackBtn:active{
+    margin-left: 2px;
+    margin-top: 2px;
+    margin-right: 6px;
+    box-shadow: 0px 0px black;
+}
+
 
 

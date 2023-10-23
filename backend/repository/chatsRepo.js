@@ -13,7 +13,7 @@ function updateUserDataBase(jsonData) {
 async function getChatsUpdateAfter(userId, lastUpdate) {
   const updateAfter = lastUpdate ? new Date(lastUpdate) : new Date(0);
 
-  console.log("Required Update: ", updateAfter);
+  // console.log("Required Update: ", updateAfter);
   const fileContent = getUserDataBase();
 
   return fileContent.find((it) => {

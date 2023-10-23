@@ -51,9 +51,9 @@ export default function HomePage(
 
     return <>
         <section className={styles.hompageUi}>
+            <br></br>
             <div className={styles.topBar}>
-                <p>&lt;</p>
-                <h2 onClick={() => console.log(chats)} >BasicChatApp</h2>
+                <h2 onClick={() => console.log(chats)} >Chat App</h2>
             </div>
             <div className={styles.chatList}>
                 {chats.map(it => {
@@ -66,7 +66,7 @@ export default function HomePage(
                             alt="" width={24} height={24} />
 
                         <div>
-                            <div>{it.name}</div>
+                            <div>{it.mail.split("@")[0][0].toUpperCase()+it.mail.split("@")[0].slice(1, it.mail.split("@")[0].length)}</div>
                             <p>{it.mail}</p>
                         </div>
 
