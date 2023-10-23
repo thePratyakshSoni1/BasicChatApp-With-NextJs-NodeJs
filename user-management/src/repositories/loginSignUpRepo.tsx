@@ -1,6 +1,6 @@
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context";
 import { encryptData } from "./cryptographyRepo";
-import { backendRouteErrorCodes, backendRoutes, backendUrl, frontendRoutes } from "../utils/constants.json"
+import { backendRouteErrorCodes, backendRoutes, frontendRoutes } from "../utils/constants.json"
 
 export async function onLogin(
     headers: Headers,
@@ -9,6 +9,7 @@ export async function onLogin(
     router: AppRouterInstance,
     key:number,
     mod:number,
+    backendUrl: string,
     setError: (msg: string) => void
 ) {
 
@@ -38,6 +39,7 @@ export async function onLogin(
                 router,
                 json.enKey,
                 json.mod,
+                backendUrl,
                 setError
             )
 
@@ -49,8 +51,9 @@ export async function onLogin(
 }
 
 export async function onSignUp(
-    router: AppRouterInstance, mail: string, password: string, key: number, mod: number, headers: Headers, setError:(msg:string)=>void
+    backendUrl:string, router: AppRouterInstance, mail: string, password: string, key: number, mod: number, setError:(msg:string)=>void
 ){
+    let headers = new Headers()
     let data = JSON.stringify({ mail: encryptData(mail, key, mod), password: encryptData(password, key, mod), logEncKeyWithMod: `${key}${mod}` })
     headers.append('Content-Type', 'application/json')
     headers.append('Content-Length', `${JSON.stringify(data).length}`)
@@ -69,12 +72,12 @@ export async function onSignUp(
     }else if(resp.errorCode == backendRouteErrorCodes.DIFFERENT_KEY_ENCRYPTION){
         console.log("Found Error: Old keys", resp.enKey, resp.mod)
             onSignUp(
+                backendUrl,
                 router,
                 mail,
                 password,
                 resp.enKey,
                 resp.mod,
-                headers,
                 setError
             )
     }else{
@@ -84,13 +87,13 @@ export async function onSignUp(
 
 }
 
-export async function verifyAutoLogin(tokens: string){
+export async function verifyAutoLogin(tokens: string, backendUrl: string){
 
     var myHeaders = new Headers()
     
     myHeaders.append("cookie", `${tokens}`)
 
-    let req = await fetch("http://localhost:3100/verifyLogin", {
+    let req = await fetch(backendUrl+"/verifyLogin", {
         credentials: "include",
         method: "GET",
         headers: myHeaders
@@ -102,13 +105,13 @@ export async function verifyAutoLogin(tokens: string){
     return resp
 }
 
-export async function verifyAutoLoginNoCache(tokens: string){
+export async function verifyAutoLoginNoCache(tokens: string, backendUrl: string){
 
     var myHeaders = new Headers()
     
     myHeaders.append("cookie", `${tokens}`)
 
-    let req = await fetch("http://localhost:3100/verifyLogin", {
+    let req = await fetch(backendUrl+"/verifyLogin", {
         credentials: "include",
         method: "GET",
         headers: myHeaders,
@@ -121,9 +124,9 @@ export async function verifyAutoLoginNoCache(tokens: string){
     return resp
 }
 
-export async function onLogout(router: AppRouterInstance){
+export async function onLogout(router: AppRouterInstance, backendUrl: string){
     var myHeaders = new Headers()
-    let logoutRequest = await fetch("http://localhost:3100/logout", {
+    let logoutRequest = await fetch(backendUrl+"/logout", {
         method: "GET",
         headers: myHeaders,
         credentials: "include"

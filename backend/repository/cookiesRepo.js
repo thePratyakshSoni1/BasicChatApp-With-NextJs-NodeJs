@@ -29,6 +29,7 @@ function deleteAllLoginCookies(res) {
     `${loginCookies.loginToken}=""; path=/; expires=${new Date(0).toUTCString()}; httpOnly`,
     `${loginCookies.userId}=""; path=/; expires=${new Date(0).toUTCString()}; httpOnly;`,
     `${loginCookies.publicEncryptionKey}=""; expires=${new Date(0).toUTCString()}; path=/; httpOnly`,
+    `${loginCookies.chatSessionId}="NULL"; expires=${new Date(0).toUTCString()}; path=/; httpOnly`,
   ]);
 }
 
@@ -76,8 +77,9 @@ function extractCookiesFromReq(cookieString){
   }else{
     return undefined
   }
-}
-
+}  
+              
+              
 module.exports = {
   deleteAllLoginCookies,
   addLoginCookiesToResponse,

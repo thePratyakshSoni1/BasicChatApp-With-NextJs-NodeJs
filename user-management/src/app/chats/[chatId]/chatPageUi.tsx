@@ -60,7 +60,7 @@ function MenuOptions(
 }
 
 
-export default function ChatPage({ food }: { food: string }) {
+export default function ChatPage({ food, processEnvs }: { food: string, processEnvs: { backendUrl: string, frontendUrl: string } }) {
 
 
     const chatList = React.useRef<null | HTMLElement>(null)
@@ -96,7 +96,7 @@ export default function ChatPage({ food }: { food: string }) {
     useEffect(() => {
 
         if (homeContext.currentReceiverId === undefined) {
-            getIdFromUserName(`${chatId}`).then((it) => {
+            getIdFromUserName(`${chatId}`, processEnvs.backendUrl).then((it) => {
                 homeContext.setReceiver(it)
                 console.log("Receiver hardset: ", it)
             })
@@ -108,11 +108,18 @@ export default function ChatPage({ food }: { food: string }) {
         }
 
         window.addEventListener('beforeunload', (beforeUnloadEvent) => {
-            console.log("Changing nwMethod")
+            console.log("Beforeunload: Changing nwMethod")
             homeContext.socket?.close()
             alert("Changin...aAaaAAaaAAAA")
             return "Changin...aAaaAAaaAAAA"
         })
+        
+        window.addEventListener('onunload', (beforeUnloadEvent) => {
+            console.log("OnUnload: Changing nwMethod")
+            homeContext.socket?.close()
+            alert("Changin...aAaaAAaaAAAA")
+        })
+
 
     }, [true])
 
@@ -140,35 +147,40 @@ export default function ChatPage({ food }: { food: string }) {
         }
     }
 
-    const onBackButton = ()=>{
-        router.push("/chats")
+    const onBackButton = () => {
+        router.push(frontendRoutes.chats)
     }
 
 
     return <section className={styles.chatInterfaceBody} onClick={handleOptionsVisibility}>
         <section className={styles.chatBox}>
 
-        <section className={styles.topBarContainer}>
-            
-            <div className={styles.pageTopBar}>
-                <Image id={styles.goBackBtn} onClick={onBackButton} width="24" height="24" src="https://img.icons8.com/material-sharp/24/000000/left.png" alt="go back" />
+            <section className={styles.topBarContainer}>
 
-                <Image id={styles.personPic}
-                    src="https://i.pinimg.com/originals/ef/0d/ec/ef0dec7cb8b80b65ae925ccb9286f567.jpg"
-                    alt="" width={24} height={24}
-                />
-                <div id={styles.personName}>{chatId.toString()}</div>
+                <div className={styles.pageTopBar}>
+                    <Image id={styles.goBackBtn} onClick={onBackButton} width="24" height="24" src="https://img.icons8.com/material-sharp/24/000000/left.png" alt="go back" />
 
-                <MenuOptions
-                    menuItems={[
-                        { name: "Settings", onclick: () => { console.log("To Settings") } },
-                        { name: "Info", onclick: () => { console.log("To user info") } },
-                        { name: "Logout", onclick: () => { onLogout(router) } }
-                    ]}
-                    isOptionVisible={isOptionsVisible} setOptionsState={setOptionsVisible}
-                />
-            </div>
-        </section>
+                    <Image id={styles.personPic}
+                        src="https://i.pinimg.com/originals/ef/0d/ec/ef0dec7cb8b80b65ae925ccb9286f567.jpg"
+                        alt="" width={24} height={24}
+                    />
+                    <div id={styles.personName}>{chatId.toString()}</div>
+
+                    <MenuOptions
+                        menuItems={[
+                            { name: "Settings", onclick: () => { console.log("To Settings") } },
+                            { name: "Info", onclick: () => { console.log("To user info") } },
+                            {
+                                name: "Logout", onclick: () => {
+                                    homeContext.socket?.close()
+                                    onLogout(router, processEnvs.backendUrl)
+                                }
+                            }
+                        ]}
+                        isOptionVisible={isOptionsVisible} setOptionsState={setOptionsVisible}
+                    />
+                </div>
+            </section>
 
             <section ref={chatList} className={styles.chatSection} onChange={(ev) => { }}>
                 {

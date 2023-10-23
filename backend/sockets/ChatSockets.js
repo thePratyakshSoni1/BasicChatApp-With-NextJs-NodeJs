@@ -48,14 +48,14 @@ class WebSocketServer extends EventEmitter {
     this.connections = []; // { chatSessionId:string, userId: string, connectedAt: Date }[]
     this.connectionsAdded = 0;
     this.connectionsClosed = 0;
-    this.isShowingSocketHealth = true
+    this.isShowingSocketHealth = true;
     this.init();
   }
 
   async init() {
     if (this.server) throw new Error(`Server already initialized`);
 
-    this.timelyShowSocketConditionLogs()
+    this.timelyShowSocketConditionLogs();
 
     this.server = http.createServer((req, res) => {
       const UPGRADE_REQ_CODE = 426;
@@ -81,7 +81,8 @@ class WebSocketServer extends EventEmitter {
     if (this.isVerifiedClientSocketReq(req)) {
       console.log("Is verified and logged user");
       this.connectionsAdded = this.connectionsAdded + 1;
-      this.addNewConnectionToList(socketFood);
+      // this.addNewConnectionToList(socketFood);
+      socket.connection = { userId: socketFood.userId, addedAt: (new Date()).toUTCString(), sessionId: "undef" }
       this.checkLiveSocketUpdates(socket, socketFood);
       console.log("Out of promise callback");
     } else {
@@ -142,38 +143,85 @@ class WebSocketServer extends EventEmitter {
       this.listenToUserMessageUpdates(socket, socketFood, resCloseUserSocket);
 
       socket.on("error", (e) => {
-        console.log("Uncaught Socket error on: ", socketFood.userId, e.name);
-        this.emit("closeReq", socketFood.userId);
+        console.log(
+          "Uncaught Socket error on: ",
+          socket.connection.userId, socket.connection.sessionId,
+          "\n==========\n",
+          e,
+          "\n=======\n"
+        );
+        this.emit("closeSpecific", socket.connection.sessionId);
       });
     }).then(() => console.log("Callback state settled"));
   }
 
   async timelyShowSocketConditionLogs() {
-    new Promise(async (res, rej)=>{
-      while(this.isShowingSocketHealth){
+    new Promise(async (res, rej) => {
+      while (this.isShowingSocketHealth) {
         console.log(
           "\n====\n",
           "Connections now: \n",
           this.connectionsAdded + this.connectionsClosed,
           this.connections,
           "\n===="
-        )
-        await sleep(15*1000)
+        );
+        await sleep(15 * 1000);
       }
-      console.log("Stopping health logs")
-      res()
-    })
+      console.log("Stopping health logs");
+      res();
+    });
   }
 
   listenToUserMessageUpdates(socket, socketFood, onListenerClose) {
     let isConnected = true;
     new Promise(async (resStoplistenning, rejStoplistenning) => {
       let lastUpdated = undefined;
+
+      this.on("closeSpecific", (sessionId)=>{
+        if(socket.connection.sessionId === sessionId){
+          console.log("Closing socket: ", socket.connection.sessionId);
+          isConnected = false;
+          this.connectionsClosed = this.connectionsClosed - 1;
+
+        let closedIndx = undefined;
+        this.connections.find((it, indx) => {
+          if (it.chatSessionId === socket.connection.sessionId) {
+            closedIndx = indx;
+            return true;
+          }
+        });
+
+        if (closedIndx) {
+          this.connections = [
+            ...this.connections.slice(0, closedIndx),
+            ...this.connections.slice(closedIndx + 1, this.connections.length),
+          ];
+          console.log("Now Connections: ", "\n>>>>\n", this.connections, "\n>>>>\n")
+        }
+        onListenerClose();
+        }
+      })
+
       this.on("closeReq", () => {
-        console.log("Closing socket: ", socketFood.userId);
-        console.log("Closing socket: ", socketFood.userId);
+        console.log("Closing socket: ", socket.connection);
         isConnected = false;
         this.connectionsClosed = this.connectionsClosed - 1;
+
+        let closedIndx = undefined;
+        this.connections.find((it, indx) => {
+          if (it.chatSessionId === socketFood.chatSessionId) {
+            closedIndx = indx;
+            return true;
+          }
+        });
+
+        if (closedIndx) {
+          this.connections = [
+            ...this.connections.slice(0, closedIndx),
+            ...this.connections.slice(closedIndx + 1, this.connections.length),
+          ];
+          console.log("Now Connections: ", "\n>>>>\n", this.connections, "\n>>>>\n")
+        }
         onListenerClose();
       });
 
@@ -193,21 +241,22 @@ class WebSocketServer extends EventEmitter {
         }
       }
       resStoplistenning();
-    }).then(() => console.log("Updates Listener settled: ", socketFood.userId));
+    }).then(() => console.log("Updates Listener settled: ", socket.connection.sessionId));
   }
 
   addSocketEventListeners(socket, userId) {
     this.server.on("close", () => {
-      this.isShowingSocketHealth = false
+      this.isShowingSocketHealth = false;
       console.log("closing...", socket);
       socket.destroy();
     });
 
     socket.on("data", (buffer) => {
       console.log("socket on data received: ...", buffer.toString());
-      this.emit("data", this.parseFrame(buffer), userId, (data) => {
-        socket.write(this.createFrame(data));
-      });
+      // this.emit("data", this.parseFrame(buffer), userId, (data) => {
+      //   socket.write(this.createFrame(data));
+      // });
+      this.emit("data", this.parseFrame(buffer), userId, socket);
     });
   }
 
@@ -224,6 +273,7 @@ class WebSocketServer extends EventEmitter {
     const opCode = firstByte & 0b00001111; //  get last 4 bits of a byte
 
     if (opCode === this.OPCODES.close) {
+      console.log("OPCODE MET: closing");
       this.emit("close");
       return null;
     } else if (opCode !== this.OPCODES.text) {
@@ -268,7 +318,6 @@ class WebSocketServer extends EventEmitter {
       const payload = buffer.subarray(offset);
       // console.log("Mansked payload is: ", payload, "\n", new Uint8Array(payload));
       const result = this.unmask(payload, maskingKey.toString());
-      console.log("Unmasked: ", result.toString("utf-8"));
       return result.toString("utf-8");
       //   return result;
     }
@@ -350,7 +399,7 @@ function activateChatSocket() {
     console.log("Headers Received: \n", headers)
   );
 
-  server.on("data", (message, userId, reply) => {
+  server.on("data", (message, userId, socket) => {
     if (!message) return;
 
     // console.log("Received for parsing; ", message);
@@ -358,10 +407,13 @@ function activateChatSocket() {
     if (data.isCloseReq) {
       console.log("GIT CLOSE REQ");
       server.emit("closeReq");
+    }else if(data.isFirstPing){
+      socket.connection.sessionId = data.chatSessionId
+      server.addNewConnectionToList( {userId: userId, chatSession: data.chatSessionId} )
     } else {
       addNewTextToUser(userId, data);
     }
-    console.log("Message received:", data);
+    console.log(`Message ${socket.connection.sessionId}:`, data);
     // return reply({ pong: data });
   });
 

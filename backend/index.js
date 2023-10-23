@@ -13,6 +13,7 @@ const getTextHistoryRouteController = require("./controller/getTextHistory");
 const logoutRouteController = require("./controller/logout");
 const { requestRoutes } = require("./utils/constants.json");
 const getIdFromUsername = require("./controller/getUser")
+require('dotenv').config();
 
 var myKeys = setKeys(generatePrimeNums());
 let serverValues = JSON.parse(file.readFileSync("./utils/serverValues.json"))

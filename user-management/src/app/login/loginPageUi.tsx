@@ -12,7 +12,7 @@ import { frontendRoutes } from "../../utils/constants.json"
 //     }
 // }
 
-export default function LoginPage(myKeys: { myKeys: { public: number, mod: number }, food: string | null }) {
+export default function LoginPage({myKeys, food, processEnvs}: { myKeys: { public: number, mod: number }, food: string | null, processEnvs:{ backendUrl: string, frontendUrl: string } }) {
 
     const [mailTxt, setMainTxt] = React.useState("")
     const [password, setPasswordTxt] = React.useState("")
@@ -44,7 +44,8 @@ export default function LoginPage(myKeys: { myKeys: { public: number, mod: numbe
                     onLogin(
                         new Headers(),
                         mailTxt, password, router,
-                        myKeys.myKeys.public, myKeys.myKeys.mod,
+                        myKeys.public, myKeys.mod,
+                        processEnvs.backendUrl,
                         setError
                     )
                 }}> LogIn</button>

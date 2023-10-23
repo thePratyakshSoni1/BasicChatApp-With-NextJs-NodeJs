@@ -1,58 +1,18 @@
 [
   {
-    "userId": "mymail@gmail.com",
-    "password": "SEETA-RAM",
-    "loginToken": "asmopadsmomaodsim",
-    "publicKey": 5,
-    "mod": 7289,
-    "privateKey": 1234
+    "userId": "lalit@gmail.com",
+    "password": "123456",
+    "mod": 13943,
+    "publicKey": 7,
+    "privateKey": 5863,
+    "loginToken": "MTY5ODA1ODU1OTIxNy1sYWxpdDEyMzE1"
   },
   {
-    "userId": "radhakrishn@gmail.com",
-    "password": "RADHE-RADHE",
-    "loginToken": "sdak89asdj",
-    "publicKey": 5,
-    "mod": 7289,
-    "privateKey": 1234
-  },
-  {
-    "userId": "rada-krishnmail@outlook.com",
-    "password": "radhe radhe",
-    "loginToken": "skjdah78234hkjh",
-    "publicKey": 5,
-    "mod": 7289,
-    "privateKey": 1234
-  },
-  {
-    "userId": "seeta-ram-nmail@outlook.com",
-    "password": "Jai Seeta Ram",
-    "loginToken": "fsajdauy873",
-    "publicKey": 5,
-    "mod": 7289,
-    "privateKey": 1234
-  },
-  {
-    "userId": "hanuman@ram.com",
-    "password": "SEETARAM",
-    "mod": 16517,
-    "publicKey": 5,
-    "privateKey": 12989,
-    "loginToken": "MTY5NzgzODk0NjkzMy1oYW51bWFuMzk3Mzc="
-  },
-  {
-    "userId": "balram@vasudev.com",
-    "password": "RADHERADHE",
-    "mod": 9853,
-    "publicKey": 3,
-    "privateKey": 6419,
-    "loginToken": "MTY5NzgzOTQ3MTc2NC1iYWxyYW0xMjA4Nw=="
-  },
-  {
-    "userId": "abc@mymail.com",
-    "password": "DBC",
-    "mod": 29893,
-    "publicKey": 3,
-    "privateKey": 19699,
-    "loginToken": "MTY5Nzg3Mzg0ODU2OC1hYmM2MTAz"
+    "userId": "pksoni@gmail.com",
+    "password": "test",
+    "mod": 6541,
+    "publicKey": 11,
+    "privateKey": 2291,
+    "loginToken": "MTY5ODA1ODU2OTg5OC1wa3NvbmkxNDY0MQ=="
   }
 ]

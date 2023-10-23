@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react"
+import { sessionCookies } from "../utils/constants.json"
 
 interface HomeContextType {
     currentReceiverId: string | undefined
@@ -34,8 +35,12 @@ export default function HomeContextProvider({ children }: { children: React.Reac
             console.log("Socket already open")
         } else {
             console.log("Opening socket")
-            setSocket(new WebSocket("ws://localhost:3200"))
-
+            // if (process.env.CHAT_SOCKET_URL) {
+            chatSocket?.close()
+            setSocket(new WebSocket("ws://192.168.101.254:3200"))
+            // }else{
+            //     throw new Error("ChatSocket URL is undefined")
+            // }
             console.log("Initing message listener...")
         }
     }
@@ -50,11 +55,16 @@ export default function HomeContextProvider({ children }: { children: React.Reac
 
     useEffect(() => {
 
-        console.log("Home context re-created")
+
+        let currentDate = new Date()
+        let loginSessionWeekLimit = 4; //weeks
+        let milliSecondsInWeek = 1000 * 60 * 60 * 24 * 7; // seconds in a week
+
+        console.log("CONTEXT: Home context re-created")
         if (chatSocket) {
-            console.log("Chat socket already initialized ")
+            console.log("CONTEXT: Chat socket already initialized ")
         } else {
-            console.log("Socket not inited")
+            console.log("CONTEXT: Socket not inited")
             initSocket()
         }
 
@@ -63,7 +73,21 @@ export default function HomeContextProvider({ children }: { children: React.Reac
     useEffect(() => {
         console.log("Chat socket re-initiated")
         console.log("STATE: ", chatSocket?.readyState)
+
         if (chatSocket) {
+
+            chatSocket.addEventListener("open", ev => {
+                let currentUser = ""
+                document.cookie.split("; ").find((it) => {
+                    if (it.split("=")[0] === sessionCookies.userId) {
+                        currentUser = it.split("=")[1]
+                        return true
+                    }
+                })
+                const randomId = `${parseInt((Math.random() * 500000).toString())}${currentUser.split("@")[0]}`
+                chatSocket?.send(JSON.stringify({ isFirstPing: true, chatSessionId: `${randomId}` }))
+            })
+
             chatSocket.addEventListener("message", (it) => {
                 console.log("Check Dtaa: ", JSON.parse(it.data))
                 setMessage(JSON.parse(it.data))

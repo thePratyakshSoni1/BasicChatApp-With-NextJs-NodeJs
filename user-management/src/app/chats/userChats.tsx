@@ -5,9 +5,11 @@ import Image from "next/image"
 import { useEffect, useState } from "react"
 import Script from "next/script"
 import { useHomeContext } from "../../Contexts/HomeContextProvider"
+import { backendRoutes, frontendRoutes } from "../../utils/constants.json"
 
 export default function HomePage(
-    props: { food: string }
+    {food, processEnvs}: { food: string, processEnvs: {backendUrl: string, socketUrl: string}}
+    
 ) {
 
     /***
@@ -23,26 +25,22 @@ export default function HomePage(
 
     useEffect(
         () => {
-
-            const currentuser = props.food.split("; ").find((v) => {
+            const currentuser = food.split("; ").find((v) => {
                 return v.split("=")[0] === "userId"
             })
-
-            const randomId = `${parseInt((Math.random() * 500000).toString())}${currentuser?.split("=")[1].split("@")[0]}`
-            document.cookie = `chatSession=${randomId}; path=/;`
 
             let chatsXhttpReq = new XMLHttpRequest();
             chatsXhttpReq.onreadystatechange = function () {
                 if (this.readyState == 4 && this.status == 200) {
                     console.log("Chats: ", JSON.parse(chatsXhttpReq.responseText))
                     if( JSON.parse(chatsXhttpReq.responseText).msg){
-                        router.push("/login")
+                        router.push(frontendRoutes.login)
                     }
                     setPeoples(JSON.parse(chatsXhttpReq.responseText))
                 }
             };
 
-            chatsXhttpReq.open("GET", "http://localhost:3100/peoples", true);
+            chatsXhttpReq.open("GET", `${processEnvs.backendUrl}${backendRoutes.peoples}`, true);
             chatsXhttpReq.withCredentials = true;
 
             chatsXhttpReq.send();
@@ -58,7 +56,7 @@ export default function HomePage(
             <div className={styles.chatList}>
                 {chats.map(it => {
                     return <div key={it.mail} className={styles.chatItem} onClick={() => {
-                        router.push(`/chats/${it.mail.split("@")[0]}`)
+                        router.push(`${frontendRoutes.chats}/${it.mail.split("@")[0]}`)
                         chatSocket.setReceiver(it.mail)
                     }}>
 

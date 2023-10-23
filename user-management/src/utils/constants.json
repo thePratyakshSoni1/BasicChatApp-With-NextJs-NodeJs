@@ -3,9 +3,6 @@
         "DIFFERENT_KEY_ENCRYPTION": 0
     },
 
-    "backendUrl": "http://localhost:3100",
-    "frontendUrl": "http://localhost:3000",
-
     "frontendRoutes": {
         "login": "/login",
         "signup": "/signup",

@@ -5,6 +5,7 @@ import { generatePrimeNums, setKeys } from "../../../../backend/utils/rsaGo"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { verifyAutoLogin } from "../../repositories/loginSignUpRepo"
+import { backendRoutes, frontendRoutes } from "../../utils/constants.json"
 import SignUpPage from "./signupPageUi"
 
 export default async function GetServerSideProps() {
@@ -22,7 +23,7 @@ export default async function GetServerSideProps() {
     console.log(isLoggedUser)
 
     if (isLoggedUser) {
-        let verificationResp = await verifyAutoLogin(cookies ? cookies : "")
+        let verificationResp = await verifyAutoLogin(cookies ? cookies : "", process.env.BACKEND_URL ? process.env.BACKEND_URL : "")
         if (verificationResp.isVerified) {
             isAuthenticated = true
         }
@@ -30,9 +31,9 @@ export default async function GetServerSideProps() {
 
     if (!isAuthenticated) {
         const opts = {
-            hostname: 'localhost',
+            hostname: process.env.BACKEND_HOSTNAME,
             port: 3100,
-            path: "/gen-login/key",
+            path: backendRoutes.generateLoginKey,
             method: "GET",
         }
         try {
@@ -72,9 +73,13 @@ export default async function GetServerSideProps() {
 
 
     let keyPayload = isEncRequestComplete ? JSON.parse(key) : undefined
-    return isAuthenticated ? redirect("/chats") : isEncRequestComplete ? <SignUpPage
+    return isAuthenticated ? redirect(frontendRoutes.chats) : isEncRequestComplete ? <SignUpPage
         myKeys={{ public: keyPayload.public, mod: keyPayload.mod }}
         food={req.get("cookie")}
+        processEnvs={ {  backendUrl: process.env.BACKEND_URL ? process.env.BACKEND_URL : "", 
+                         frontendUrl: process.env.FRONTEND_URL ? process.env.FRONTEND_URL : "" 
+                    }
+        }
     /> : <div>
         <h1>Service Unavailable</h1>
         <p>this page isn&apos;t working, please try again later</p>

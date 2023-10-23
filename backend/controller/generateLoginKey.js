@@ -1,5 +1,4 @@
 function genEncKeysRouteController(req, res, serverLogKeys){
-    
     res.writeHead(200, { "Content-Type": "application/json" });
         let datToBeSent = {
           public: serverLogKeys.public,

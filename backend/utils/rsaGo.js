@@ -44,7 +44,7 @@ function setKeys(primes){
     var prime1 =  primes[parseInt(Math.random()*(primes.length-1))] 
     var prime2 =  primes[parseInt(Math.random()*(primes.length-1))] 
     var modulous = prime1*prime2
-    console.log("Modulous: ", modulous)
+    console.log(">>> Modulous: ", modulous)
     var fi = (prime1 - 1) * ( prime2 - 1)
     var e=2
     var d=2
@@ -194,11 +194,11 @@ function bytesToBase64(bytes){
 
 
 
-  // Usage
-  let dd = bytesToBase64("!@#$%^&*(){}_=[]Hello My = Friend"); // "YSDEgCDwkICAIOaWhyDwn6aE"
-  let md = (base64ToBytes(dd)); // "a Ā 𐀀 文 🦄"
-  console.log(dd)
-  console.log(md)
+//   // Usage
+//   let dd = bytesToBase64("!@#$%^&*(){}_=[]Hello My = Friend"); // "YSDEgCDwkICAIOaWhyDwn6aE"
+//   let md = (base64ToBytes(dd)); // "a Ā 𐀀 文 🦄"
+//   console.log(dd)
+//   console.log(md)
 
 // main()
 

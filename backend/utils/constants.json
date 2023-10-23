@@ -9,7 +9,8 @@
         "loginToken": "logToken",
         "publicEncryptionKey": "enKey",
         "userId": "userId",
-        "mod": "mod"
+        "mod": "mod",
+        "chatSessionId": "chatSession"
     },
 
     "backendUrl": "http://localhost:3100",

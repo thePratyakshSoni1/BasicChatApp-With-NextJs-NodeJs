@@ -6,6 +6,7 @@ import { verifyAutoLogin, verifyAutoLoginNoCache } from "../../repositories/logi
 import { redirect, usePathname } from "next/navigation"
 import { useEffect } from "react"
 import Script from "next/script"
+import { frontendRoutes } from "../../utils/constants.json"
 
 
 export const dynamic = 'force-dynamic'
@@ -22,21 +23,18 @@ export default async function GetServerSideProps() {
 
     isLoggedUser = (cookies?.includes("userId") && cookies?.includes("logToken") && cookies?.includes("enKey")) ? true : false
     console.log(isLoggedUser)
-    
-    
+
+
     if (isLoggedUser) {
-        let verificationResp = await verifyAutoLoginNoCache(cookies ? cookies : "")
+        let verificationResp = await verifyAutoLoginNoCache(cookies ? cookies : "", process.env.BACKEND_URL ? process.env.BACKEND_URL : "")
         if (verificationResp.isVerified) {
             isAuthenticated = true
         }
     }
 
-    if (!isAuthenticated) {
-        console.log("Not verified")
-        return redirect("/login")
-
-    }
-
-    return <HomePage food={cookies===null ? "" : cookies}/>
+    return isAuthenticated ? <HomePage 
+        food={cookies === null ? "" : cookies} 
+        processEnvs={{ backendUrl: process.env.BACKEND_URL ? process.env.BACKEND_URL : "", socketUrl: process.env.FRONTEND_URL ? process.env.FRONTEND_URL : "" }} 
+    /> : redirect(frontendRoutes.login)
 
 }

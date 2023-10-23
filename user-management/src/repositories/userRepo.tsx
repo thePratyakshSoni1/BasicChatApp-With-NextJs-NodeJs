@@ -1,5 +1,5 @@
-import { backendRoutes, backendUrl } from "../utils/constants.json"
-export async function getIdFromUserName(username: string){
+import { backendRoutes } from "../utils/constants.json"
+export async function getIdFromUserName(username: string, backendUrl: string){
 
     let heads = new Headers()
     heads.append("Content-Type", "application/json")

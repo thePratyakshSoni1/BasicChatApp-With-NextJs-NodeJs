@@ -6,7 +6,8 @@
 
 .chatInterfaceBody{
     width: 100vw;
-    height: 100vh;
+    height: 100%;
+    position: fixed;
     background-color: #ffffff;
     display: flex;
     align-items: center;
@@ -15,14 +16,17 @@
 }
 
 .chatBox{    
+    position: fixed;
+    top: 0;
+    margin-top: 2vh;
     background: linear-gradient(120deg, #a7d0ff, #043975);
     border-radius: 16px;
     border-style: none;
     flex-flow: column;
     display: flex;
-    width: 80vw;
+    width: 90vw;
     align-items: stretch;
-    height: 80vh;
+    height: 95%;
     box-shadow: 6px 6px black;
     flex-direction: column;
     justify-content: flex-end;
@@ -145,7 +149,7 @@
 
 .pageTopBar{
 
-    width: 80vw;
+    width: 90vw;
     padding: 12px 14px;
     background: #ffffff;
     position: relative;
