@@ -37,7 +37,7 @@ export default function HomeContextProvider({ children }: { children: React.Reac
             console.log("Opening socket")
             // if (process.env.CHAT_SOCKET_URL) {
             chatSocket?.close()
-            setSocket(new WebSocket("ws://192.168.101.254:3200"))
+            setSocket(new WebSocket("ws://192.168.20.254:3200"))
             // }else{
             //     throw new Error("ChatSocket URL is undefined")
             // }

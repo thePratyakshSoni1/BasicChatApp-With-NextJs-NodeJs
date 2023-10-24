@@ -160,9 +160,9 @@ class WebSocketServer extends EventEmitter {
       while (this.isShowingSocketHealth) {
         console.log(
           "\n====\n",
-          "Connections now: \n",
-          this.connectionsAdded + this.connectionsClosed,
-          this.connections,
+          "Connections now: ",
+          this.connectionsAdded + this.connectionsClosed, "\n",
+          this.connections.map(it=>`${it.userId} || ${it.chatSessionId} || ${it.connectedAt}`),
           "\n===="
         );
         await sleep(15 * 1000);
@@ -202,7 +202,7 @@ class WebSocketServer extends EventEmitter {
         }
       })
 
-      this.on("closeReq", () => {
+      this.on("closeAllConnection", () => {
         console.log("Closing socket: ", socket.connection);
         isConnected = false;
         this.connectionsClosed = this.connectionsClosed - 1;
@@ -247,7 +247,7 @@ class WebSocketServer extends EventEmitter {
   addSocketEventListeners(socket, userId) {
     this.server.on("close", () => {
       this.isShowingSocketHealth = false;
-      console.log("closing...", socket);
+      console.log("CLOSING SOCKET SERVER ⛔⛔⛔", socket);
       socket.destroy();
     });
 
@@ -256,7 +256,7 @@ class WebSocketServer extends EventEmitter {
       // this.emit("data", this.parseFrame(buffer), userId, (data) => {
       //   socket.write(this.createFrame(data));
       // });
-      this.emit("data", this.parseFrame(buffer), userId, socket);
+      this.emit("data", this.parseFrame(buffer, socket), userId, socket);
     });
   }
 
@@ -267,14 +267,14 @@ class WebSocketServer extends EventEmitter {
       .digest("base64");
   }
 
-  parseFrame(buffer) {
+  parseFrame(buffer, socket) {
     // First byte processing ( to get opCode i.e. to close connection or is a msg )
     const firstByte = buffer.readUInt8(0);
     const opCode = firstByte & 0b00001111; //  get last 4 bits of a byte
 
     if (opCode === this.OPCODES.close) {
-      console.log("OPCODE MET: closing");
-      this.emit("close");
+      console.log("OPCODE Received: closing");
+      this.emit("close", socket.connection.sessionId);
       return null;
     } else if (opCode !== this.OPCODES.text) {
       return;
@@ -406,7 +406,7 @@ function activateChatSocket() {
     const data = JSON.parse(message);
     if (data.isCloseReq) {
       console.log("GIT CLOSE REQ");
-      server.emit("closeReq");
+      server.emit("closeSpecific", socket.connection.sessionId);
     }else if(data.isFirstPing){
       socket.connection.sessionId = data.chatSessionId
       server.addNewConnectionToList( {userId: userId, chatSession: data.chatSessionId} )
@@ -417,9 +417,9 @@ function activateChatSocket() {
     // return reply({ pong: data });
   });
 
-  server.on("close", () => {
+  server.on("close", (sessionId) => {
     console.log("Conn closed");
-    server.emit("closeReq");
+    server.emit("closeSpecific", sessionId);
   });
 
   server.listen(() => {
