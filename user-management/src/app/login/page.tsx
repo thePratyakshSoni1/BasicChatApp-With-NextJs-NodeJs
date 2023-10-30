@@ -6,7 +6,7 @@ import LoginPage from "./loginPageUi"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { verifyAutoLogin } from "../../repositories/loginSignUpRepo"
-import {frontendRoutes, backendRoutes} from "../../utils/constants.json"
+import Constants from "@/utils/constants"
 
 export default async function getServerSideProps() {
     console.log(">>> start request")
@@ -33,7 +33,7 @@ export default async function getServerSideProps() {
         const opts = {
             hostname: process.env.BACKEND_HOSTNAME,
             port: 3100,
-            path: backendRoutes.generateLoginKey,
+            path: Constants.backendRoutes.generateLoginKey,
             method: "GET",
         }
         try {
@@ -73,7 +73,7 @@ export default async function getServerSideProps() {
 
 
     let keyPayload = isEncRequestComplete ? JSON.parse(key) : undefined
-    return isAuthenticated ? redirect(frontendRoutes.chats) : isEncRequestComplete ? <LoginPage
+    return isAuthenticated ? redirect(Constants.frontendRoutes.chats) : isEncRequestComplete ? <LoginPage
         myKeys={{ public: keyPayload.public, mod: keyPayload.mod }}
         food={req.get("cookie")}
         processEnvs={ {  backendUrl: process.env.BACKEND_URL ? process.env.BACKEND_URL : "", 

@@ -8,8 +8,10 @@ import http from "http"
 import { headers } from "next/headers"
 import Script from "next/script"
 import { useHomeContext } from "../../../Contexts/HomeContextProvider"
-import { sessionCookies, frontendRoutes } from "../../../utils/constants.json"
+import Constants from "@/utils/constants"
 import { getIdFromUserName } from "@/repositories/userRepo"
+import { getImgUrlFromImageBuffer } from "@/repositories/imageMsgRepo"
+import Spinner from "@/app/spinner"
 
 function MessageChip({ msg, isSent }: { msg: string, isSent: boolean }) {
     if (isSent)
@@ -20,6 +22,48 @@ function MessageChip({ msg, isSent }: { msg: string, isSent: boolean }) {
         return <div className={styles.msgContainer}>
             <div className={styles.msgReceived}>{msg}</div>
         </div>
+}
+
+function ImageMessageChip({ msg, isSent, imageName, backendUrl, receiver }: { msg: string, isSent: boolean, imageName: string, backendUrl: string, receiver: string|undefined }) {
+
+    const [imgLoadingState, setImageLoadingState] = useState<{ imgSrc: string, isLoading: boolean }>({ imgSrc: "", isLoading: true })
+
+    let reqHeaders = new Headers()
+    reqHeaders.append("Content-Type", "application/json")
+    useEffect(()=>{
+        fetch(
+                backendUrl + Constants.backendRoutes.getUserMediaImage,
+                {
+                    method: "POST",
+                    headers: reqHeaders,
+                    credentials: "include",
+                    body: JSON.stringify({ receiver: receiver, mediaName: imageName })
+                }
+            ).then((it) => {
+                let responseData: { mediaName: string, buffer: number[], isSuccess: boolean, errorCode: undefined|number }
+                it.json().then(respData => {
+                    responseData = respData
+                    let imgSrcFromBuffer = getImgUrlFromImageBuffer(responseData.buffer)
+                    setImageLoadingState({ imgSrc: imgSrcFromBuffer, isLoading: false })
+                })
+            })
+    },[])
+
+    if (isSent)
+        return <div className={styles.msgContainer}>
+            {imgLoadingState.isLoading ? <div className = {styles.imageMsgSentSpinnerContainer}> <Spinner isVisible={imgLoadingState.isLoading} /></div>
+                : <Image className= {styles.imgMsgSent} src={imgLoadingState.imgSrc} alt="" width={120} height={120} />
+            }
+            <div className= {styles.imgMsgTxtSent} >{msg}</div>
+        </div>
+    else
+        return <div className={styles.msgContainer}>
+            {imgLoadingState.isLoading ? <div className={styles.imageMsgReceivedSpinnerContainer}><Spinner isVisible={imgLoadingState.isLoading} /></div>
+                : <Image className= {styles.imgMsgReceived} src={imgLoadingState.imgSrc} alt="" width={120} height={120} />
+            }
+            <div className= {styles.imgMsgTxtReceived} >{msg}</div>
+        </div>
+
 }
 
 function MenuOptions(
@@ -59,17 +103,120 @@ function MenuOptions(
 
 }
 
+function MsgTextField({ onImageMsg, setMsg, onSend, msg }: { onImageMsg: (imgBuffer: Buffer, data: string, mediaName: string) => void, msg: string, setMsg: (msg: string) => void, onSend: () => void }) {
+
+    return <div className={styles.msgTextField}>
+        <input type="text" placeholder="Write your msg here" value={msg} onChange={(ev) => {
+            setMsg(ev.target.value)
+        }}
+            onKeyUp={(event) => { if (event.key === "Enter") onSend() }} />
+        <AddPhotoButton onImageMsg={onImageMsg} />
+    </div>
+}
+
+function AddPhotoButton({ onImageMsg }: { onImageMsg: (imgBuffer: Buffer, data: string, mediaName: string) => void }) {
+
+    const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        let imgFormData = new FormData()
+        const selectedImg = event.target.files === null ? undefined : event.target.files[0]
+        if (selectedImg) {
+            selectedImg?.arrayBuffer().then(it => {
+                let imgBuf = Buffer.from(it)
+                console.log(selectedImg)
+                let sreader = selectedImg?.stream().getReader()
+                onImageMsg(
+                    imgBuf,
+                    "Sending image: " + selectedImg.name,
+                    selectedImg.name
+                )
+                console.log("Sending...")
+            })
+
+
+        }
+        // console.log("X: ", x.toString())
+
+
+
+        if (selectedImg) {
+            let fileReader = new FileReader()
+            fileReader.onload = (event) => {
+                if (typeof event.target?.result === "string") {
+                    setImg(event.target?.result)
+                }
+            }
+            fileReader.readAsDataURL(selectedImg)
+
+        }
+    }
+    const addPhotoInputRef = useRef<HTMLInputElement | null>(null)
+    const [imgsrc, setImg] = useState<string>("https://i.pinimg.com/none")
+
+
+    return <div>
+        <input className={styles.photoInput} ref={addPhotoInputRef} type="file" accept="image/*" onChange={handleImageUpload} />
+        <Image onClick={() => {
+            addPhotoInputRef.current?.click()
+        }} className={styles.addPhotoButton} width="32" height="32" src="https://img.icons8.com/ios-filled/50/737373/camera--v3.png" alt="camera--v3"/>
+    </div>
+}
+
 
 export default function ChatPage({ food, processEnvs }: { food: string, processEnvs: { backendUrl: string, frontendUrl: string } }) {
 
 
     const chatList = React.useRef<null | HTMLElement>(null)
 
-    const [msgField, setMadFieldText] = React.useState("")
     const [isOptionsVisible, setOptionsVisible] = React.useState(false)
-    const [userTexts, setUserTexts] = useState<{ id: number, isSent: boolean, data: string, at: string }[]>([])
+
+
+    /**
+     * {
+        id: number,
+        isSent: boolean,
+        data: string,
+        at: string (Date),
+        isMediaMsg: boolean,
+        mediaBufferArray: Buffer/number[],
+        mediaType: string,
+        mediaName: string
+    }
+     */
+    const [userTexts, setUserTexts] = useState<{ id: number, isSent: boolean, data: string, at: string, isMediaMsg: boolean, mediaType: string, mediaName: string }[]>([])
+    const [msgField, setMadFieldText] = React.useState("")
+    const [sendingMsgsState, setSendingMsg] = useState<{ msgTempId: string, state: number }[]>([])
 
     const { chatId } = useParams()
+
+    const sendImageMsg = (mediaBuffer: Buffer, data: string = "", mediaName: string) => {
+        let msgTosend = {
+            id: parseInt((Math.random() * 50000).toString()),
+            receiver: homeContext.currentReceiverId,
+            isSent: true,
+            data: data,
+            at: (new Date()).toUTCString(),
+            isMediaMsg: true,
+            mediaBufferArray: mediaBuffer,
+            mediaType: Constants.messageMediaTypes.image,
+            mediaName: mediaName
+        }
+
+        let headersForMsgReq = new Headers()
+        headersForMsgReq.append("Content-Type", "application/json")
+
+        fetch(
+            processEnvs.backendUrl + Constants.backendRoutes.sendImageMsg,
+            {
+                method: "POST",
+                credentials: "include",
+                headers: headersForMsgReq,
+                body: JSON.stringify(msgTosend)
+            }
+        )
+
+    }
+
+    let x = ["hi", 0, 1]
 
     const router = useRouter()
 
@@ -77,7 +224,7 @@ export default function ChatPage({ food, processEnvs }: { food: string, processE
 
     const updateUserTexts = () => {
         console.log("Populating text history")
-        let chatHistory: { id: number, isSent: boolean, data: string, at: string }[] = []
+        let chatHistory: { id: number, isSent: boolean, data: string, at: string, isMediaMsg: boolean, mediaType: string, mediaName: string }[] = []
         let userChats = homeContext.messages?.messages.find((msgPayloads) => {
             console.log("on: ", msgPayloads.person)
             return msgPayloads.person.split("@")[0] === chatId
@@ -113,7 +260,7 @@ export default function ChatPage({ food, processEnvs }: { food: string, processE
             alert("Changin...aAaaAAaaAAAA")
             return "Changin...aAaaAAaaAAAA"
         })
-        
+
         window.addEventListener('onunload', (beforeUnloadEvent) => {
             console.log("OnUnload: Changing nwMethod")
             homeContext.socket?.close()
@@ -148,7 +295,7 @@ export default function ChatPage({ food, processEnvs }: { food: string, processE
     }
 
     const onBackButton = () => {
-        router.push(frontendRoutes.chats)
+        router.push(Constants.frontendRoutes.chats)
     }
 
 
@@ -185,18 +332,17 @@ export default function ChatPage({ food, processEnvs }: { food: string, processE
             <section ref={chatList} className={styles.chatSection} onChange={(ev) => { }}>
                 {
                     userTexts.map((it, indx) => {
-                        return <MessageChip key={it.id} msg={it.data} isSent={it.isSent} />
+                        if (it.isMediaMsg && it.mediaType === Constants.messageMediaTypes.image) {
+                            return <ImageMessageChip key={it.id} isSent={it.isSent} receiver={homeContext.currentReceiverId} imageName={it.mediaName} msg={it.data} backendUrl={processEnvs.backendUrl} />
+                        } else {
+                            return <MessageChip key={it.id} msg={it.data} isSent={it.isSent} />
+                        }
                     })
                 }
             </section>
 
             <section className={styles.actionSection}>
-                <input className={styles.msgTextField} type="text" placeholder="Write your msg here" value={msgField} onChange={(ev) => {
-                    setMadFieldText(ev.target.value)
-
-                }}
-                    onKeyUp={(event) => { if (event.key === "Enter") onSend() }}
-                ></input>
+                <MsgTextField onImageMsg={sendImageMsg} msg={msgField} setMsg={(msg) => { setMadFieldText(msg) }} onSend={onSend} />
                 <button onClick={(ev) => {
                     onSend()
                 }} className={styles.sendButton} >Send</button>

@@ -2,7 +2,7 @@ import { headers } from "next/headers"
 import ChatPage from "./chatPageUi"
 import { verifyAutoLogin, verifyAutoLoginNoCache } from "../../../repositories/loginSignUpRepo"
 import { redirect, useParams } from "next/navigation"
-import { frontendRoutes } from "../../../utils/constants.json"
+import Constants from "@/utils/constants"
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -35,6 +35,6 @@ export default async function GetServerSideProps() {
                          frontendUrl: process.env.FRONTEND_URL ? process.env.FRONTEND_URL : "" 
                     }
         }
-        /> : redirect(frontendRoutes.login)
+        /> : redirect(Constants.frontendRoutes.login)
 
 }

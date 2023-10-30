@@ -1,10 +1,10 @@
 import { createContext, useContext, useEffect, useState } from "react"
-import { sessionCookies } from "../utils/constants.json"
+import Constants from "@/utils/constants"
 
 interface HomeContextType {
     currentReceiverId: string | undefined
     socket: WebSocket | undefined
-    messages: undefined | { userId: string, lastUpdated: string, messages: { person: string, chat: { id: number, isSent: boolean, data: string, at: string }[] }[] }
+    messages: undefined | { userId: string, lastUpdated: string, messages: { person: string, chat: { id: number, isSent: boolean, data: string, at: string, isMediaMsg: boolean, mediaType: string, mediaName: string  }[] }[] }
     initSocket: () => void
     setReceiver: (receiverId: string) => void
     sendMsg: (recepientId: string, msg: string) => void
@@ -29,6 +29,7 @@ export default function HomeContextProvider({ children }: { children: React.Reac
     const [chatSocket, setSocket] = useState<WebSocket | undefined>(undefined)
     const [messages, setMessage] = useState<{ userId: string, lastUpdated: string, messages: { person: string, chat: { id: number, isSent: boolean, data: string, at: string }[] }[] }>()
     const [currentReceiver, setReceiver] = useState<string | undefined>(undefined)
+    const [chatSessionId, setChatSessionId] = useState<String|undefined>()
 
     const initSocket = () => {
         if (chatSocket && chatSocket?.readyState === chatSocket?.OPEN) {
@@ -37,7 +38,7 @@ export default function HomeContextProvider({ children }: { children: React.Reac
             console.log("Opening socket")
             // if (process.env.CHAT_SOCKET_URL) {
             chatSocket?.close()
-            setSocket(new WebSocket("ws://192.168.20.254:3200"))
+            setSocket(new WebSocket("ws://192.168.255.254:3200"))
             // }else{
             //     throw new Error("ChatSocket URL is undefined")
             // }
@@ -46,19 +47,35 @@ export default function HomeContextProvider({ children }: { children: React.Reac
     }
 
     const sendMessage = (recepiendId: string, msg: string) => {
+        
+        /**
+         * {
+            data: string,
+            isMediaMsg: boolean,
+            mediaBufferArray: Buffer/number[],
+            mediaType: string,
+            mediaName: string|null
+            receiver: string
+        }
+         */
+
         if (chatSocket) {
-            chatSocket.send(JSON.stringify({ receiver: recepiendId, data: msg }))
+            chatSocket.send(JSON.stringify({ receiver: recepiendId, data: msg, isMediaMsg: false, mediaType: Constants.messageMediaTypes.text, mediaName: null }))
         } else {
             console.log("Socket not initialized !")
         }
+
+    }
+
+    const onFirstPing = function( sessionId: string ){
+        console.log("ChatSession id received: ", sessionId)
+        setChatSessionId( sessionId )
+    }
+    const isFirstPing = function(dataReceived: any){
+        return dataReceived.isFirstPing ? true : false
     }
 
     useEffect(() => {
-
-
-        let currentDate = new Date()
-        let loginSessionWeekLimit = 4; //weeks
-        let milliSecondsInWeek = 1000 * 60 * 60 * 24 * 7; // seconds in a week
 
         console.log("CONTEXT: Home context re-created")
         if (chatSocket) {
@@ -75,26 +92,19 @@ export default function HomeContextProvider({ children }: { children: React.Reac
         console.log("STATE: ", chatSocket?.readyState)
 
         if (chatSocket) {
-
-            chatSocket.addEventListener("open", ev => {
-                let currentUser = ""
-                document.cookie.split("; ").find((it) => {
-                    if (it.split("=")[0] === sessionCookies.userId) {
-                        currentUser = it.split("=")[1]
-                        return true
-                    }
-                })
-                const randomId = `${parseInt((Math.random() * 500000).toString())}${currentUser.split("@")[0]}`
-                chatSocket?.send(JSON.stringify({ isFirstPing: true, chatSessionId: `${randomId}` }))
-            })
-
             chatSocket.addEventListener("message", (it) => {
-                console.log("Check Dtaa: ", JSON.parse(it.data))
-                setMessage(JSON.parse(it.data))
+                let receivedData = JSON.parse(it.data)
+                console.log("Check Dtaa: ", receivedData)
+                if( isFirstPing( receivedData ) ){
+                    onFirstPing(receivedData.chatSessionId)
+                }else{
+                    setMessage(receivedData)
+                }
             })
         } else {
             console.log("MSG LISTENER NOT INITED")
         }
+        
     }, [chatSocket])
 
     return <HomeContext.Provider value={{

@@ -1,6 +1,6 @@
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context";
 import { encryptData } from "./cryptographyRepo";
-import { backendRouteErrorCodes, backendRoutes, frontendRoutes } from "../utils/constants.json"
+import Constants from "@/utils/constants"
 
 export async function onLogin(
     headers: Headers,
@@ -17,7 +17,7 @@ export async function onLogin(
     headers.append('Content-Type', 'application/json')
     headers.append('Content-Length', `${JSON.stringify(data).length}`)
 
-    const response = await fetch(backendUrl+backendRoutes.login, {
+    const response = await fetch(backendUrl+Constants.backendRoutes.login, {
         method: "POST",
         credentials: 'include',
         headers: headers,
@@ -27,10 +27,10 @@ export async function onLogin(
     const json = await response.json();
     console.log(json)
     if (json.isSuccess) {
-        router.push(frontendRoutes.chats)
+        router.push(Constants.frontendRoutes.chats)
     } else {
 
-        if(json.errorCode == backendRouteErrorCodes.DIFFERENT_KEY_ENCRYPTION){
+        if(json.errorCode == Constants.backendRouteErrorCodes.DIFFERENT_KEY_ENCRYPTION){
             console.log("Found Error: Old keys", json.enKey, json.mod)
             onLogin(
                 headers,
@@ -58,7 +58,7 @@ export async function onSignUp(
     headers.append('Content-Type', 'application/json')
     headers.append('Content-Length', `${JSON.stringify(data).length}`)
 
-    const signupReq = await fetch( backendUrl+backendRoutes.signup, {
+    const signupReq = await fetch( backendUrl+Constants.backendRoutes.signup, {
         method: "POST",
         credentials: "include",
         headers: headers,
@@ -68,8 +68,8 @@ export async function onSignUp(
     const resp = await signupReq.json()
 
     if(resp.isSuccess){
-        router.push(frontendRoutes.chats)
-    }else if(resp.errorCode == backendRouteErrorCodes.DIFFERENT_KEY_ENCRYPTION){
+        router.push(Constants.frontendRoutes.chats)
+    }else if(resp.errorCode == Constants.backendRouteErrorCodes.DIFFERENT_KEY_ENCRYPTION){
         console.log("Found Error: Old keys", resp.enKey, resp.mod)
             onSignUp(
                 backendUrl,
@@ -133,5 +133,5 @@ export async function onLogout(router: AppRouterInstance, backendUrl: string){
     })
     let resp = await logoutRequest.json()
     console.log("On logout", resp)
-    router.push(frontendRoutes.login)
+    router.push(Constants.frontendRoutes.login)
 }

@@ -1,0 +1,14 @@
+#animeTest{
+    width: 100%;
+    height: 32rem;
+    color: green;
+    font-weight: bold;
+    position: absolute;
+    overflow-wrap: break-word;
+    bottom: 168px;
+    overflow-y: hidden;
+}
+
+#imgFrame{
+    width: 100vw;
+}

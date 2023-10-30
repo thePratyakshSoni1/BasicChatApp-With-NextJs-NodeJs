@@ -5,7 +5,7 @@ import { generatePrimeNums, setKeys } from "../../../../backend/utils/rsaGo"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { verifyAutoLogin } from "../../repositories/loginSignUpRepo"
-import { backendRoutes, frontendRoutes } from "../../utils/constants.json"
+import Constants from "@/utils/constants"
 import SignUpPage from "./signupPageUi"
 
 export default async function GetServerSideProps() {
@@ -33,7 +33,7 @@ export default async function GetServerSideProps() {
         const opts = {
             hostname: process.env.BACKEND_HOSTNAME,
             port: 3100,
-            path: backendRoutes.generateLoginKey,
+            path: Constants.backendRoutes.generateLoginKey,
             method: "GET",
         }
         try {
@@ -73,7 +73,7 @@ export default async function GetServerSideProps() {
 
 
     let keyPayload = isEncRequestComplete ? JSON.parse(key) : undefined
-    return isAuthenticated ? redirect(frontendRoutes.chats) : isEncRequestComplete ? <SignUpPage
+    return isAuthenticated ? redirect(Constants.frontendRoutes.chats) : isEncRequestComplete ? <SignUpPage
         myKeys={{ public: keyPayload.public, mod: keyPayload.mod }}
         food={req.get("cookie")}
         processEnvs={ {  backendUrl: process.env.BACKEND_URL ? process.env.BACKEND_URL : "", 

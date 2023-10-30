@@ -4,6 +4,16 @@
     100% { font-size: 1rem; }
 } 
 
+.photoInput{
+    display: none;
+}
+
+.addPhotoButton{
+    margin-top: 6px;
+    margin-right: 18px;
+}
+
+
 .chatInterfaceBody{
     width: 100vw;
     height: 100%;
@@ -85,11 +95,28 @@
     border-style: none;
     height: 60%;
     margin: 12px 8px 12px 0px;
-    padding-left: 21px;
-    font-size: 1.15rem;
     box-shadow: 4px 4px black;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
+.msgTextField p{
+    cursor: pointer;
+}
+
+.msgTextField input{
+    width: 80%;
+    height: 100%;
+    border-radius: 100px;
+    background-color: white;
+    color: black;
+    padding-left: 12px;
+    padding-right: 12px;
+    font-size: 1.15rem;
+    border-style: hidden;
+    outline: none;
+}
 
 .msgTextField:active{
     box-shadow: 0px 0px black;
@@ -106,7 +133,7 @@
     width: fit-content;
     height: fit-content;
     min-height: 36px;
-    border-radius: 24px 24px 0px 24px;
+    border-radius: 24px 0px 24px 24px;
     margin: 0px 12px 8px 0px;
     display: flex;
     align-items: center;
@@ -114,6 +141,7 @@
     padding: 12px;
     float: right;
     color: black;
+    overflow-wrap: anywhere;
     box-shadow: 4px 4px black;
     max-width: 80%;
     animation-name: messageSend;
@@ -129,10 +157,11 @@
     max-width: 80%;
     color: black;
     min-height: 36px;    
+    overflow-wrap: anywhere;
     height: fit-content;
     float: left;
-    border-radius: 24px 24px 24px 0px;
-    margin: 12px 12px 12px 8px;
+    border-radius: 0px 24px 24px 24px;
+    margin: 8px 12px 0px 6px;
     padding: 12px;
     box-shadow: 4px 4px #000000;
     animation-name: messageSend;
@@ -244,5 +273,110 @@
     box-shadow: 0px 0px black;
 }
 
+.imgMsgTxtSent{
+    background-color: #48ff66;
+    width: 18rem;
+    height: -moz-fit-content;
+    height: fit-content;
+    min-height: 36px;
+    border-radius: 0px 0px 0px 24px;
+    margin: 0px 12px 8px 0px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 12px;
+    float: right;
+    color: black;
+    box-shadow: 4px 4px black;
+    overflow-wrap: anywhere;
+    max-width: 80%;
+    animation-name: messageSend;
+    animation-duration: 0.35s;
+}
 
+.imgMsgSent{
+    float: right;
+    width: 18rem;
+    margin-left: 100%;
+    display: block;
+    height: 18rem;
+    margin-right: 12px;
+    object-fit: cover;
+    border-radius: 2rem 2rem 0rem 0rem;
+    border-color: #48ff66;
+    border-style: solid;
+    border-width: 3px;
+    max-width: 80%;
+    box-shadow: 4px 4px 2px 0px #000000;
+    animation-name: messageSend;
+    animation-duration: 0.35s;
+}
+
+.imgMsgReceived{
+    width: 18rem;
+    display: block;
+    height: 18rem;
+    object-fit: cover;
+    margin-left: 6px;
+    border-radius: 2rem 2rem 0rem 0rem;
+    border-color: #ffffff;
+    border-style: solid;
+    max-width: 80%;
+    border-width: 3px;
+    box-shadow: 4px 4px 2px 0px #000000;
+    animation-name: messageSend;
+    animation-duration: 0.35s;
+}
+
+.imgMsgTxtReceived{
+    background-color: #ffffff;
+    width: 18rem;
+    height: fit-content;
+    min-height: 36px;
+    border-radius: 0px 0px 24px 0px;
+    margin: 0px 12px 0px 6px;
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    color: black;
+    box-shadow: 4px 4px black;
+    max-width: 80%;
+    overflow-wrap: anywhere;
+    animation-name: messageSend;
+    animation-duration: 0.35s;
+}
+
+.imageMsgSentSpinnerContainer{
+    float: right;
+    width: 18rem;
+    margin-left: 100%;
+    display: flex;
+    height: 18rem;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    border-radius: 2rem 2rem 0rem 0rem;
+    border-color: #48ff66;
+    border-style: solid;
+    border-width: 2px;
+    box-shadow: 4px 4px 2px 0px #000000;
+    animation-name: messageSend;
+    animation-duration: 0.35s;
+}
+
+.imageMsgReceivedSpinnerContainer{
+    width: 18rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 18rem;
+    margin-left: 6px;
+    border-radius: 2rem 2rem 0rem 0rem;
+    border-color: #ffffff;
+    border-style: solid;
+    max-width: 80%;
+    box-shadow: 4px 4px 2px 0px #000000;
+    animation-name: messageSend;
+    animation-duration: 0.35s;
+}
 

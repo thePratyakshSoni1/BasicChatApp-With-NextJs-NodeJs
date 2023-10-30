@@ -5,7 +5,7 @@ import Image from "next/image"
 import { useEffect, useState } from "react"
 import Script from "next/script"
 import { useHomeContext } from "../../Contexts/HomeContextProvider"
-import { backendRoutes, frontendRoutes } from "../../utils/constants.json"
+import Constants from "@/utils/constants"
 
 export default function HomePage(
     {food, processEnvs}: { food: string, processEnvs: {backendUrl: string, socketUrl: string}}
@@ -34,13 +34,13 @@ export default function HomePage(
                 if (this.readyState == 4 && this.status == 200) {
                     console.log("Chats: ", JSON.parse(chatsXhttpReq.responseText))
                     if( JSON.parse(chatsXhttpReq.responseText).msg){
-                        router.push(frontendRoutes.login)
+                        router.push(Constants.frontendRoutes.login)
                     }
                     setPeoples(JSON.parse(chatsXhttpReq.responseText))
                 }
             };
 
-            chatsXhttpReq.open("GET", `${processEnvs.backendUrl}${backendRoutes.peoples}`, true);
+            chatsXhttpReq.open("GET", `${processEnvs.backendUrl}${Constants.backendRoutes.peoples}`, true);
             chatsXhttpReq.withCredentials = true;
 
             chatsXhttpReq.send();
@@ -56,7 +56,7 @@ export default function HomePage(
             <div className={styles.chatList}>
                 {chats.map(it => {
                     return <div key={it.mail} className={styles.chatItem} onClick={() => {
-                        router.push(`${frontendRoutes.chats}/${it.mail.split("@")[0]}`)
+                        router.push(`${Constants.frontendRoutes.chats}/${it.mail.split("@")[0]}`)
                         chatSocket.setReceiver(it.mail)
                     }}>
 
