@@ -1,4 +1,5 @@
 const { getTextHistory } = require("./usersRepo");
+const { errorCodes } = require("../utils/constants.json");
 
 function getUserDataBase() {
   const file = require("fs");
@@ -49,77 +50,102 @@ function getLastUpdate(userId) {
   }
 }
 
-function addNewTextToUser(senderId, msg) {
+async function addNewTextToUser(senderId, msg) {
   const fileContent = getUserDataBase();
-  let txts = getSenderAndReceiverTexts(
-    fileContent,
-    senderId,
-    msg.receiver
-  );
+  let txts = getSenderAndReceiverTexts(fileContent, senderId, msg.receiver);
+  let msgId = getUniqueMsgId();
 
-  if (txts.senderTxts && txts.receiverTxts) {
-    updateUserDataBase(
-      updateUserMessagesInFileContent(
-        senderId,
-        msg,
-        fileContent
-      )
-    );
-  } else {
-    updateUserDataBase(
-      addNewUserChat(fileContent, msg, senderId)
-    )
+  new Promise((res, rej) => {
+    if (txts.senderTxts && txts.receiverTxts) {
+      if (msg.isMediaMsg) {
+        msg.mediaName = getUniqueMsgId() + msg.mediaName.replace(" ", "_");
+      }
+      updateUserDataBase(
+        updateUserMessagesInFileContent(senderId, msg, fileContent, msgId)
+      );
+      res();
+    } else {
+      updateUserDataBase(addNewUserChat(fileContent, msg, senderId, msgId));
+      res();
+    }
+  });
+
+  if (msg.isMediaMsg) {
+    addImageToDB(msg.mediaName, Buffer.from(msg.mediaBufferArray.data));
   }
 }
 
-function addNewUserChat(userDataDoc, msg, senderId){
-  let dateInst = new Date()
-  let firstChat = { 
-      id: 0, //changed later
-      data: msg.data,
-      at: dateInst.toString(),
-      isSent: false // edited later
-   }
+async function addImageToDB(imageName, imageBuffer) {
+  let fs = require("fs");
+  fs.writeFileSync("./database/images/" + imageName, imageBuffer);
+  console.log("Image Added", imageName);
+}
 
-  for( let i=0; i<userDataDoc.length; i++){
-    if(userDataDoc[i].userId === senderId || userDataDoc[i].userId === msg.receiver){
-      console.log("Now updating: ", userDataDoc[i].userId)
-      userDataDoc[i].messages.push(
-        {
-          person: userDataDoc[i].userId === msg.receiver ? senderId : msg.receiver,
-          chat: [ {id: getUniqueMsgId(), ...firstChat, isSent: userDataDoc[i].userId === senderId} ]
-        }
-      )
+function addNewUserChat(userDataDoc, msg, senderId, msgId) {
+  let dateInst = new Date();
+  let firstChat = {
+    id: 0, //changed later
+    data: msg.data,
+    isMediaMsg: msg.isMediaMsg ? true : false,
+    mediaType: msg.mediaType,
+    at: dateInst.toString(),
+    isSent: false, // edited later
+  };
+
+  for (let i = 0; i < userDataDoc.length; i++) {
+    if (
+      userDataDoc[i].userId === senderId ||
+      userDataDoc[i].userId === msg.receiver
+    ) {
+      console.log("Now updating: ", userDataDoc[i].userId);
+
+      userDataDoc[i].messages.push({
+        person:
+          userDataDoc[i].userId === msg.receiver ? senderId : msg.receiver,
+        chat: [
+          {
+            id: msgId,
+            ...firstChat,
+            isSent: userDataDoc[i].userId === senderId,
+            mediaName: msg.mediaName ? msg.mediaName : null,
+          },
+        ],
+      });
       userDataDoc[i].lastUpdated = dateInst.toString();
     }
   }
 
-  return userDataDoc
+  return userDataDoc;
 }
 
-function getUniqueMsgId(){
-  let dateInst = new Date()
-  return `${dateInst.getMilliseconds()}${dateInst.getSeconds()}`
+function getUniqueMsgId() {
+  let dateInst = new Date();
+  return `${dateInst.getMilliseconds()}${dateInst.getSeconds()}`;
 }
 
-function updateUserMessagesInFileContent(senderId, msg, content) {
+function updateUserMessagesInFileContent(senderId, msg, content, msgId) {
   for (let i = 0; i < content.length; i++) {
     if (content[i].userId === senderId || content[i].userId === msg.receiver) {
       let messages = content[i].messages;
       let msgIndx = undefined;
 
-      var userChats = ( messages.find((it, index) => {
+      var userChats = messages.find((it, index) => {
         msgIndx = index;
-        return it.person === msg.receiver || it.person === senderId
-      })).chat;
+        return it.person === msg.receiver || it.person === senderId;
+      }).chat;
 
       let dateInst = new Date();
+
       userChats.push({
-        id: getUniqueMsgId(),
+        id: msgId,
         data: msg.data,
+        isMediaMsg: msg.isMediaMsg ? true : false,
+        mediaType: msg.mediaType,
+        mediaName: msg.mediaName ? msg.mediaName : null,
         at: dateInst.toString(),
         isSent: content[i].userId === msg.receiver ? false : true,
       });
+
       content[i].messages[msgIndx].chat = userChats;
       content[i].lastUpdated = dateInst.toString();
     }
@@ -144,7 +170,7 @@ function getSenderAndReceiverTexts(fileContent, senderId, receiverId) {
     }
 
     if (fileContent[i].userId === receiverId) {
-      console.log("On: ", fileContent[i].userId)
+      console.log("On: ", fileContent[i].userId);
       receiver = fileContent[i].messages.find((it) => {
         return it.person === senderId;
       });
@@ -159,9 +185,54 @@ function getSenderAndReceiverTexts(fileContent, senderId, receiverId) {
   return { senderTxts: sender, receiverTxts: receiver };
 }
 
+function getUserMediaImageBufferByName(receiver, userId, mediaName) {
+  const fs = require("fs");
+
+  if (isUserAccountMedia(userId, receiver, mediaName)) {
+    let imageBuf = fs.readFileSync("./database/images/" + mediaName);
+    if (imageBuf) return { isSuccess: true, buffer: imageBuf };
+    else
+      return {
+        isSuccess: false,
+        buffer: imageBuf,
+        errorCode: errorCodes.MSG_MEDIA_NOT_FOUND,
+      };
+  } else {
+    return {
+      isSuccess: false,
+      buffer: undefined,
+      errorCode: errorCodes.INVALID_USER,
+    };
+  }
+}
+
+function isUserAccountMedia(userId, receiver, mediaName) {
+  const fs = require("fs");
+
+  let isUserAccountMedia = false;
+
+  let userMessages = getUserDataBase().find((it) => {
+    return it.userId === userId;
+  }).messages;
+
+  if (userMessages && receiver) {
+    userMessages
+      .find((it) => {
+        return it.person === receiver;
+      })
+      .chat.find((it) => {
+        if (it.mediaName === mediaName) {
+          isUserAccountMedia = true;
+        }
+      });
+  }
+  return isUserAccountMedia;
+}
+
 module.exports = {
   getSpecificChatHistory,
   getChatsUpdateAfter,
   getLastUpdate,
   addNewTextToUser,
+  getUserMediaImageBufferByName,
 };

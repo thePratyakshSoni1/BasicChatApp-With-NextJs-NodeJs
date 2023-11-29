@@ -13,16 +13,8 @@ const {
   addNewTextToUser,
 } = require("../repository/chatsRepo");
 
-async function testWebSocket(callback) {
-  return new Promise(async function (res, rej) {
-    console.log("Inside of Promise callback");
-    callback(res);
-    while (true) {
-      console.log("Hello...");
-      await waier();
-    }
-  });
-}
+//----------IMPORTS----IMPORTS--------IMPORTS--------IMPORTS--------IMPORTS---------------------------------------//
+
 
 function sleep(mills) {
   return new Promise((reo, rjo) => {
@@ -81,17 +73,29 @@ class WebSocketServer extends EventEmitter {
     if (this.isVerifiedClientSocketReq(req)) {
       console.log("Is verified and logged user");
       this.connectionsAdded = this.connectionsAdded + 1;
-      // this.addNewConnectionToList(socketFood);
-      socket.connection = { userId: socketFood.userId, addedAt: (new Date()).toUTCString(), sessionId: "undef" }
+
+      this.sendUpgradeConnectionResponse(socket, req);
+      this.addSocketEventListeners(socket, socketFood.userId);
+      
+      this.onNewConnection(socket, socketFood.userId);
       this.checkLiveSocketUpdates(socket, socketFood);
+
       console.log("Out of promise callback");
     } else {
       socket.end("HTTP/1.1 400 Bad Request");
       return;
     }
 
-    this.sendUpgradeConnectionResponse(socket, req);
-    this.addSocketEventListeners(socket, socketFood.userId);
+  }
+
+  closeSocketOnNumbConnection(socket) {
+    let lastActivity = new Date(socket.connection.lastActivityAt);
+    let currentTime = new Date();
+    let connectionNumbFor = (currentTime - lastActivity) / 1000; //in seconds
+    if (connectionNumbFor > 60 * 3) {
+      console.log("Conection found Numb: 🗿🗿🗿🗿🗿");
+      this.emit("closeSpecific", socket.connection.sessionId);
+    }
   }
 
   isVerifiedClientSocketReq(req) {
@@ -145,7 +149,8 @@ class WebSocketServer extends EventEmitter {
       socket.on("error", (e) => {
         console.log(
           "Uncaught Socket error on: ",
-          socket.connection.userId, socket.connection.sessionId,
+          socket.connection.userId,
+          socket.connection.sessionId,
           "\n==========\n",
           e,
           "\n=======\n"
@@ -161,11 +166,14 @@ class WebSocketServer extends EventEmitter {
         console.log(
           "\n====\n",
           "Connections now: ",
-          this.connectionsAdded + this.connectionsClosed, "\n",
-          this.connections.map(it=>`${it.userId} || ${it.chatSessionId} || ${it.connectedAt}`),
+          this.connectionsAdded + this.connectionsClosed,
+          "\n",
+          this.connections.map(
+            (it) => `${it.userId} || ${it.chatSessionId} || ${it.connectedAt}`
+          ),
           "\n===="
         );
-        await sleep(15 * 1000);
+        await sleep(5 * 60 * 1000);
       }
       console.log("Stopping health logs");
       res();
@@ -177,30 +185,38 @@ class WebSocketServer extends EventEmitter {
     new Promise(async (resStoplistenning, rejStoplistenning) => {
       let lastUpdated = undefined;
 
-      this.on("closeSpecific", (sessionId)=>{
-        if(socket.connection.sessionId === sessionId){
+      this.on("closeSpecific", (sessionId) => {
+        if (socket.connection.sessionId === sessionId) {
           console.log("Closing socket: ", socket.connection.sessionId);
           isConnected = false;
           this.connectionsClosed = this.connectionsClosed - 1;
 
-        let closedIndx = undefined;
-        this.connections.find((it, indx) => {
-          if (it.chatSessionId === socket.connection.sessionId) {
-            closedIndx = indx;
-            return true;
-          }
-        });
+          let closedIndx = undefined;
+          this.connections.find((it, indx) => {
+            if (it.chatSessionId === socket.connection.sessionId) {
+              closedIndx = indx;
+              return true;
+            }
+          });
 
-        if (closedIndx) {
-          this.connections = [
-            ...this.connections.slice(0, closedIndx),
-            ...this.connections.slice(closedIndx + 1, this.connections.length),
-          ];
-          console.log("Now Connections: ", "\n>>>>\n", this.connections, "\n>>>>\n")
+          if (closedIndx) {
+            this.connections = [
+              ...this.connections.slice(0, closedIndx),
+              ...this.connections.slice(
+                closedIndx + 1,
+                this.connections.length
+              ),
+            ];
+            console.log(
+              "Now Connections: ",
+              "\n>>>>\n",
+              this.connections,
+              "\n>>>>\n"
+            );
+          }
+          onListenerClose();
         }
-        onListenerClose();
-        }
-      })
+      });
 
       this.on("closeAllConnection", () => {
         console.log("Closing socket: ", socket.connection);
@@ -220,28 +236,33 @@ class WebSocketServer extends EventEmitter {
             ...this.connections.slice(0, closedIndx),
             ...this.connections.slice(closedIndx + 1, this.connections.length),
           ];
-          console.log("Now Connections: ", "\n>>>>\n", this.connections, "\n>>>>\n")
+          console.log(
+            "Now Connections: ",
+            "\n>>>>\n",
+            this.connections,
+            "\n>>>>\n"
+          );
         }
         onListenerClose();
       });
 
       while (isConnected) {
-        await sleep(2000);
-        var sameUserSockets = this.connections.filter((it) => {
-          return it.userId === socketFood.userId;
-        });
-
         let updates = await getChatsUpdateAfter(socketFood.userId, lastUpdated);
 
         if (updates) {
+          socket.lastActivityAt = (new Date()).toUTCString()
           lastUpdated = updates.lastUpdated;
           socket.write(this.createFrame(updates));
         } else {
           // console.log("No updates...");
+          this.closeSocketOnNumbConnection(socket);
         }
+        await sleep(2000);
       }
       resStoplistenning();
-    }).then(() => console.log("Updates Listener settled: ", socket.connection.sessionId));
+    }).then(() =>
+      console.log("Updates Listener settled: ", socket.connection.sessionId)
+    );
   }
 
   addSocketEventListeners(socket, userId) {
@@ -252,10 +273,12 @@ class WebSocketServer extends EventEmitter {
     });
 
     socket.on("data", (buffer) => {
-      console.log("socket on data received: ...", buffer.toString());
+      // console.log("socket on data received: ...", buffer.toString());
       // this.emit("data", this.parseFrame(buffer), userId, (data) => {
       //   socket.write(this.createFrame(data));
       // });
+      
+      socket.lastActivityAt = (new Date()).toUTCString()
       this.emit("data", this.parseFrame(buffer, socket), userId, socket);
     });
   }
@@ -270,8 +293,10 @@ class WebSocketServer extends EventEmitter {
   parseFrame(buffer, socket) {
     // First byte processing ( to get opCode i.e. to close connection or is a msg )
     const firstByte = buffer.readUInt8(0);
+    const finBit = firstByte & 0b10000000;
     const opCode = firstByte & 0b00001111; //  get last 4 bits of a byte
 
+    console.log("OPCODE: ", opCode, "FIN: ", finBit)
     if (opCode === this.OPCODES.close) {
       console.log("OPCODE Received: closing");
       this.emit("close", socket.connection.sessionId);
@@ -390,6 +415,40 @@ class WebSocketServer extends EventEmitter {
   listen(callback) {
     this.server.listen(this.port, callback);
   }
+
+
+  /** Adds `socket.connection: { userId:String, addedAt: string, sessionId: string, lastActivityAt: string },`
+   * Send `sessionId` as firstPing,
+   * Adds connection details to list
+   */
+  onNewConnection(socket, userId) {
+    const randomId = `CHATSESSION_${parseInt(
+      (Math.random() * 500000).toString()
+    )}${userId.split("@")[0]}`;
+
+    socket.connection = {
+      userId: userId,
+      addedAt: new Date().toUTCString(),
+      sessionId: randomId,
+      lastActivityAt: new Date().toUTCString(),
+    }
+
+    socket.write(
+      this.createFrame(
+        JSON.stringify({
+          isFirstPing: true,
+          chatSessionId: socket.connection.sessionId,
+        })
+      )
+    )
+
+    this.addNewConnectionToList({
+      userId: userId,
+      chatSession: socket.connection.sessionId,
+    })
+
+  }
+
 }
 
 function activateChatSocket() {
@@ -407,13 +466,10 @@ function activateChatSocket() {
     if (data.isCloseReq) {
       console.log("GIT CLOSE REQ");
       server.emit("closeSpecific", socket.connection.sessionId);
-    }else if(data.isFirstPing){
-      socket.connection.sessionId = data.chatSessionId
-      server.addNewConnectionToList( {userId: userId, chatSession: data.chatSessionId} )
     } else {
       addNewTextToUser(userId, data);
     }
-    console.log(`Message ${socket.connection.sessionId}:`, data);
+    console.log(`Message ${socket.connection.sessionId}:`, "data");
     // return reply({ pong: data });
   });
 

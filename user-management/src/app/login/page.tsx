@@ -31,13 +31,12 @@ export default async function getServerSideProps() {
 
     if (!isAuthenticated) {
         const opts = {
-            hostname: process.env.BACKEND_HOSTNAME,
-            port: 3100,
-            path: Constants.backendRoutes.generateLoginKey,
             method: "GET",
+            path:  Constants.backendRoutes.generateLoginKey
         }
+
         try {
-            var clientRq = http.request(opts, (res) => {
+            var clientRq = http.request(`${process.env.BACKEND_URL}`, opts, (res) => {
                 res.on("data", (chunk) => {
                     key = chunk.toString()
                     console.log(">>> Received Login-Gen-Key:\n", key)
@@ -67,7 +66,7 @@ export default async function getServerSideProps() {
             console.log(">>> end request")
         } catch (err) {
             isRequestComplete = true
-            console.log(">>> Server error please try later!")
+            console.log(">>> /gen-login/key Server error please try later!")
         }
     }
 

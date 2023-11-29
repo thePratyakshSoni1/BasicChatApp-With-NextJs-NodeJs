@@ -15,7 +15,8 @@ const HomeContext = createContext<HomeContextType>(
         currentReceiverId: undefined,
         socket: undefined,
         sendMsg: (recepientId = "NONE", msg = "NONE") => { },
-        initSocket: () => { }, messages: undefined,
+        initSocket: () => { }, 
+        messages: undefined,
         setReceiver: (receiverId = "NONE") => { }
     }
 )
@@ -27,7 +28,7 @@ export function useHomeContext() {
 export default function HomeContextProvider({ children }: { children: React.ReactNode }) {
 
     const [chatSocket, setSocket] = useState<WebSocket | undefined>(undefined)
-    const [messages, setMessage] = useState<{ userId: string, lastUpdated: string, messages: { person: string, chat: { id: number, isSent: boolean, data: string, at: string }[] }[] }>()
+    const [messages, setMessage] = useState<{ userId: string, lastUpdated: string, messages: { person: string, chat: { id: number, isSent: boolean, data: string, at: string, isMediaMsg: boolean, mediaType: string, mediaName: string }[] }[] }>()
     const [currentReceiver, setReceiver] = useState<string | undefined>(undefined)
     const [chatSessionId, setChatSessionId] = useState<String|undefined>()
 
@@ -38,7 +39,7 @@ export default function HomeContextProvider({ children }: { children: React.Reac
             console.log("Opening socket")
             // if (process.env.CHAT_SOCKET_URL) {
             chatSocket?.close()
-            setSocket(new WebSocket("ws://192.168.255.254:3200"))
+            setSocket(new WebSocket("ws://localhost:3100/chatSocket"))
             // }else{
             //     throw new Error("ChatSocket URL is undefined")
             // }

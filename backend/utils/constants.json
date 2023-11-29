@@ -2,7 +2,9 @@
 
     "errorCodes": {
         "DIFFERENT_KEY_ENCRYPTION": 0,
-        "AUTH_DENEID": 1
+        "AUTH_DENEID": 1,
+        "MSG_MEDIA_NOT_FOUND": 2,
+        "INVALID_USER": 3
     },
 
     "loginCookies": {
@@ -28,7 +30,15 @@
         "peoples": "/peoples",
         "getTextHistory": "/textHistory",
         "chatSocket": "/chatSocket",
-        "getUser": "/getUser"
-    }
+        "getUser": "/getUser",
+        "sendImageMsg": "/sendImageMsg"
+    },
+
+    "messageMediaTypes": {
+        "image": "IMAGE",
+        "video": "VIDEO",
+        "audio": "AUDIO",
+        "text": "TEXT"
+      }
 
 }

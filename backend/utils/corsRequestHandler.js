@@ -7,6 +7,7 @@ function handleCors(req, res) {
     res.appendHeader("Access-Control-Allow-Headers", "Content-Type");
     res.appendHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
     res.appendHeader("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
+    // res.appendHeader("Access-Control-Allow-Origin", "*");
     res.appendHeader("Access-Control-Allow-Credentials", true);
 
   if (

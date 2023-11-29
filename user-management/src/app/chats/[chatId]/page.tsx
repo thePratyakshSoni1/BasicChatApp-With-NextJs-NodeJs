@@ -27,6 +27,7 @@ export default async function GetServerSideProps() {
         if (verificationResp.isVerified) {
             isAuthenticated = true
         }
+
     }
 
     return isAuthenticated ? <ChatPage

@@ -47,7 +47,7 @@ export default function Testpage() {
                 body: JSON.stringify(dataToSent)
             }).then((it)=>console.log("....Sent"))
             console.log("Sending...")
-
+        
         }
 
     }
