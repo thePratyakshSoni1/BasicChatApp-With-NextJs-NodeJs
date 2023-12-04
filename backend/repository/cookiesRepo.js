@@ -10,26 +10,26 @@ function addLoginCookiesToResponse(logToken, userId, enKey, mod, response) {
   response.appendHeader("Set-Cookie", [
     `${loginCookies.loginToken}=${logToken}; expires=${
       (new Date( currentDate.getTime() + (milliSecondsInWeek * loginSessionWeekLimit))).toUTCString()
-    }; path=/; httpOnly;`,
+    }; path=/; SameSite=None; Secure; httpOnly;`,
     `${loginCookies.userId}=${userId}; expires=${
       (new Date( currentDate.getTime() + (milliSecondsInWeek * loginSessionWeekLimit))).toUTCString()
-    }; path=/; httpOnly;`,
+    }; path=/; SameSite=None; Secure; httpOnly;`,
     `${loginCookies.publicEncryptionKey}=${enKey}; expires=${
       (new Date( currentDate.getTime() + (milliSecondsInWeek * loginSessionWeekLimit))).toUTCString()
-    }; path=/; httpOnly;`,
+    }; path=/; SameSite=None; Secure; httpOnly;`,
     `${loginCookies.mod}=${mod}; expires=${
       (new Date( currentDate.getTime() + (milliSecondsInWeek * loginSessionWeekLimit))).toUTCString()
-    }; path=/; httpOnly;`,
+    }; path=/; SameSite=None; Secure; httpOnly;`,
   ]);
   return;
 }
 
 function deleteAllLoginCookies(res) {
   res.appendHeader("Set-Cookie", [
-    `${loginCookies.loginToken}=""; path=/; expires=${new Date(0).toUTCString()}; httpOnly`,
-    `${loginCookies.userId}=""; path=/; expires=${new Date(0).toUTCString()}; httpOnly;`,
-    `${loginCookies.publicEncryptionKey}=""; expires=${new Date(0).toUTCString()}; path=/; httpOnly`,
-    `${loginCookies.chatSessionId}="NULL"; expires=${new Date(0).toUTCString()}; path=/; httpOnly`,
+    `${loginCookies.loginToken}=""; path=/; expires=${new Date(0).toUTCString()}; SameSite=None; Secure; httpOnly`,
+    `${loginCookies.userId}=""; path=/; expires=${new Date(0).toUTCString()}; SameSite=None; Secure; httpOnly;`,
+    `${loginCookies.publicEncryptionKey}=""; expires=${new Date(0).toUTCString()}; path=/; SameSite=None; Secure; httpOnly`,
+    `${loginCookies.chatSessionId}="NULL"; expires=${new Date(0).toUTCString()}; path=/; SameSite=None; Secure; httpOnly`,
   ]);
 }
 

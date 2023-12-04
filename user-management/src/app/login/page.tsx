@@ -1,6 +1,6 @@
 import React from "react"
 import styles from "./log2/page.module.css"
-import http from "http"
+import http from "https"
 import { generatePrimeNums, setKeys } from "../../../../backend/utils/rsaGo"
 import LoginPage from "./loginPageUi"
 import { headers } from "next/headers"
@@ -36,7 +36,9 @@ export default async function getServerSideProps() {
         }
 
         try {
-            var clientRq = http.request(`${process.env.BACKEND_URL}`, opts, (res) => {
+            var clientRq = http.request(
+                `${process.env.BACKEND_API_URL}${Constants.backendRoutes.generateLoginKey}`,
+                (res) => {
                 res.on("data", (chunk) => {
                     key = chunk.toString()
                     console.log(">>> Received Login-Gen-Key:\n", key)
@@ -64,9 +66,10 @@ export default async function getServerSideProps() {
             await checkRequestStatus()
 
             console.log(">>> end request")
-        } catch (err) {
+        } catch (err: any) {
             isRequestComplete = true
             console.log(">>> /gen-login/key Server error please try later!")
+            console.log(err.message)
         }
     }
 

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import Script from "next/script"
 import { onSignUp } from "@/repositories/loginSignUpRepo"
 
-export default function SignUpPage({myKeys, food, processEnvs}: { myKeys: { public: number, mod: number }, food: string | null,  processEnvs:{ backendUrl: string, frontendUrl: string } }) {
+export default function SignUpPage({myKeys, food}: { myKeys: { public: number, mod: number }, food: string | null }) {
 
     const [mailTxt, setMainTxt] = React.useState("")
     const [password, setPasswordTxt] = React.useState("")
@@ -54,7 +54,6 @@ export default function SignUpPage({myKeys, food, processEnvs}: { myKeys: { publ
                 <button className={styles.loginButton} onClick={() => {
                     if (!filedsHaveMistakes()) {
                         onSignUp(
-                            processEnvs.backendUrl,
                             router,
                             mailTxt,
                             password,

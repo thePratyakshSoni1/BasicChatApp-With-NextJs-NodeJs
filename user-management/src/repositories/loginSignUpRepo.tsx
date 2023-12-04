@@ -2,13 +2,21 @@ import { AppRouterInstance } from "next/dist/shared/lib/app-router-context";
 import { encryptData } from "./cryptographyRepo";
 import Constants from "@/utils/constants"
 
+function addCookieToLocal(resposne: Response) {
+    console.log("You can use:")
+    let tmp = resposne.headers.forEach(value => {
+
+        console.log("It gave: ", value)
+    })
+}
+
 export async function onLogin(
     headers: Headers,
     mailTxt: string,
     password: string,
     router: AppRouterInstance,
-    key:number,
-    mod:number,
+    key: number,
+    mod: number,
     backendUrl: string,
     setError: (msg: string) => void
 ) {
@@ -17,7 +25,7 @@ export async function onLogin(
     headers.append('Content-Type', 'application/json')
     headers.append('Content-Length', `${JSON.stringify(data).length}`)
 
-    const response = await fetch(backendUrl+Constants.backendRoutes.login, {
+    const response = await fetch(`/api` + Constants.backendRoutes.login, {
         method: "POST",
         credentials: 'include',
         headers: headers,
@@ -25,12 +33,24 @@ export async function onLogin(
     });
 
     const json = await response.json();
+
     console.log(json)
     if (json.isSuccess) {
+
+        const response2 = await fetch(backendUrl + Constants.backendRoutes.login, {
+            method: "POST",
+            credentials: 'include',
+            headers: headers,
+            body: data
+        });
+
+        const json2 = await response2.json();
+        console.log("JSON2 is: ", json2)
+        
         router.push(Constants.frontendRoutes.chats)
     } else {
 
-        if(json.errorCode == Constants.backendRouteErrorCodes.DIFFERENT_KEY_ENCRYPTION){
+        if (json.errorCode == Constants.backendRouteErrorCodes.DIFFERENT_KEY_ENCRYPTION) {
             console.log("Found Error: Old keys", json.enKey, json.mod)
             onLogin(
                 headers,
@@ -48,52 +68,53 @@ export async function onLogin(
 
     }
 
+
+
 }
 
 export async function onSignUp(
-    backendUrl:string, router: AppRouterInstance, mail: string, password: string, key: number, mod: number, setError:(msg:string)=>void
-){
+    router: AppRouterInstance, mail: string, password: string, key: number, mod: number, setError: (msg: string) => void
+) {
     let headers = new Headers()
     let data = JSON.stringify({ mail: encryptData(mail, key, mod), password: encryptData(password, key, mod), logEncKeyWithMod: `${key}${mod}` })
     headers.append('Content-Type', 'application/json')
     headers.append('Content-Length', `${JSON.stringify(data).length}`)
 
-    const signupReq = await fetch( backendUrl+Constants.backendRoutes.signup, {
+    const signupReq = await fetch("/api" + Constants.backendRoutes.signup, {
         method: "POST",
         credentials: "include",
         headers: headers,
         body: data
-    } )
+    })
 
     const resp = await signupReq.json()
 
-    if(resp.isSuccess){
+    if (resp.isSuccess) {
         router.push(Constants.frontendRoutes.chats)
-    }else if(resp.errorCode == Constants.backendRouteErrorCodes.DIFFERENT_KEY_ENCRYPTION){
+    } else if (resp.errorCode == Constants.backendRouteErrorCodes.DIFFERENT_KEY_ENCRYPTION) {
         console.log("Found Error: Old keys", resp.enKey, resp.mod)
-            onSignUp(
-                backendUrl,
-                router,
-                mail,
-                password,
-                resp.enKey,
-                resp.mod,
-                setError
-            )
-    }else{
+        onSignUp(
+            router,
+            mail,
+            password,
+            resp.enKey,
+            resp.mod,
+            setError
+        )
+    } else {
         setError(resp.msg)
     }
-    
+
 
 }
 
-export async function verifyAutoLogin(tokens: string, backendUrl: string){
+export async function verifyAutoLogin(tokens: string, backendUrl: string) {
 
     var myHeaders = new Headers()
-    
+
     myHeaders.append("cookie", `${tokens}`)
 
-    let req = await fetch(backendUrl+"/verifyLogin", {
+    let req = await fetch("/api" + "/verifyLogin", {
         credentials: "include",
         method: "GET",
         headers: myHeaders
@@ -102,16 +123,20 @@ export async function verifyAutoLogin(tokens: string, backendUrl: string){
     let resp = await req.json()
 
     console.log("Verification resp: ", resp)
+    if( !resp.isVerified ){
+        await logoutBackend( backendUrl )
+    }
+
     return resp
 }
 
-export async function verifyAutoLoginNoCache(tokens: string, backendUrl: string){
+export async function verifyAutoLoginNoCache(tokens: string, backendUrl: string) {
 
     var myHeaders = new Headers()
-    
+
     myHeaders.append("cookie", `${tokens}`)
 
-    let req = await fetch(backendUrl+"/verifyLogin", {
+    let req = await fetch("/api" + "/verifyLogin", {
         credentials: "include",
         method: "GET",
         headers: myHeaders,
@@ -121,17 +146,37 @@ export async function verifyAutoLoginNoCache(tokens: string, backendUrl: string)
     let resp = await req.json()
 
     console.log("Verification resp: ", resp)
+    if( !resp.isVerified ){
+        await logoutBackend( backendUrl )
+    }
+
     return resp
 }
 
-export async function onLogout(router: AppRouterInstance, backendUrl: string){
+export async function onLogout(router: AppRouterInstance, backendUrl: string) {
     var myHeaders = new Headers()
-    let logoutRequest = await fetch(backendUrl+"/logout", {
+    let logoutRequest = await fetch("/api" + "/logout", {
         method: "GET",
         headers: myHeaders,
         credentials: "include"
     })
-    let resp = await logoutRequest.json()
-    console.log("On logout", resp)
+
+    let backendLogoutReq = logoutBackend(backendUrl)
+    
+    let resp1 = await logoutRequest.json()
+    let resp2 = await backendLogoutReq
+    console.log("On logout", resp1)
+    console.log("On Backend logout", resp2)
     router.push(Constants.frontendRoutes.login)
+}
+
+export async function logoutBackend(backendUrl: string) {
+    var myHeaders = new Headers()
+    let logoutRequest = await fetch(backendUrl + "/logout", {
+        method: "GET",
+        headers: myHeaders,
+        credentials: "include"
+    })
+    
+    return logoutRequest.json()
 }

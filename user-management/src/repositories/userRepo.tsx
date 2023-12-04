@@ -1,9 +1,9 @@
 import Constants from "@/utils/constants"
-export async function getIdFromUserName(username: string, backendUrl: string){
+export async function getIdFromUserName(username: string){
 
     let heads = new Headers()
     heads.append("Content-Type", "application/json")
-    let jsonResp = await fetch(backendUrl+Constants.backendRoutes.getUser, {
+    let jsonResp = await fetch("/api"+Constants.backendRoutes.getUser, {
         method: "POST",
         headers: heads,
         credentials: "include",

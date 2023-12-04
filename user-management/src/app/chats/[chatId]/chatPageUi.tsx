@@ -243,7 +243,7 @@ export default function ChatPage({ food, processEnvs }: { food: string, processE
     useEffect(() => {
 
         if (homeContext.currentReceiverId === undefined) {
-            getIdFromUserName(`${chatId}`, processEnvs.backendUrl).then((it) => {
+            getIdFromUserName(`${chatId}`).then((it) => {
                 homeContext.setReceiver(it)
                 console.log("Receiver hardset: ", it)
             })

@@ -30,28 +30,24 @@ export default async function GetServerSideProps() {
     }
 
     if (!isAuthenticated) {
-        const opts = {
-            hostname: process.env.BACKEND_HOSTNAME,
-            port: 3100,
-            path: Constants.backendRoutes.generateLoginKey,
-            method: "GET",
-        }
         try {
-            var clientRq = http.request(opts, (res) => {
-                res.on("data", (chunk) => {
-                    key = chunk.toString()
-                    console.log(">>> Received Login-Gen-Key:\n", key)
-                    isRequestComplete = true
-                    isEncRequestComplete = true
-                })
+            var clientRq = http.request(
+                `${process.env.BACKEND_API_URL}${Constants.backendRoutes.generateLoginKey}`,
+                (res) => {
+                    res.on("data", (chunk) => {
+                        key = chunk.toString()
+                        console.log(">>> Received Login-Gen-Key:\n", key)
+                        isRequestComplete = true
+                        isEncRequestComplete = true
+                    })
 
-                res.on("error", (err) => {
-                    isRequestComplete = false
+                    res.on("error", (err) => {
+                        isRequestComplete = false
+                    })
                 })
-            })
 
             clientRq.end()
-            let delayLimit = 10*1000 
+            let delayLimit = 10 * 1000
             const sleepNow = (delay: number) => new Promise((resolve) => setTimeout(resolve, delay))
 
             const checkRequestStatus = async () => {
@@ -76,14 +72,10 @@ export default async function GetServerSideProps() {
     return isAuthenticated ? redirect(Constants.frontendRoutes.chats) : isEncRequestComplete ? <SignUpPage
         myKeys={{ public: keyPayload.public, mod: keyPayload.mod }}
         food={req.get("cookie")}
-        processEnvs={ {  backendUrl: process.env.BACKEND_URL ? process.env.BACKEND_URL : "", 
-                         frontendUrl: process.env.FRONTEND_URL ? process.env.FRONTEND_URL : "" 
-                    }
-        }
     /> : <div>
         <h1>Service Unavailable</h1>
         <p>this page isn&apos;t working, please try again later</p>
-        </div>
+    </div>
 
 
 }

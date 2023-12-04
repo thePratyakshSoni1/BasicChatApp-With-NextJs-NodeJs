@@ -1,5 +1,5 @@
 import fs from "fs"
-import http from "http"
+import http from "https"
 import { headers } from "next/headers"
 import HomePage from "./userChats"
 import { verifyAutoLogin, verifyAutoLoginNoCache } from "../../repositories/loginSignUpRepo"
@@ -15,7 +15,6 @@ export const revalidate = 0
 
 export default async function GetServerSideProps() {
 
-
     var cookies = headers().get("cookie")
     console.log(">>> NextSever Cokkies: \n", cookies)
     let isLoggedUser = false
@@ -23,7 +22,6 @@ export default async function GetServerSideProps() {
 
     isLoggedUser = (cookies?.includes("userId") && cookies?.includes("logToken") && cookies?.includes("enKey")) ? true : false
     console.log(isLoggedUser)
-
 
     if (isLoggedUser) {
         let verificationResp = await verifyAutoLoginNoCache(cookies ? cookies : "", process.env.BACKEND_URL ? process.env.BACKEND_URL : "")

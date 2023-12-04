@@ -35,17 +35,12 @@ export default function Testpage() {
                 data: "Sending image: "+selectedImg.name,
                 mediaName: selectedImg.name
             }
-            // let dataToSent = {
-            //     imgaeBuf: Buffer.from(Uint8Array.from(Buffer.from("Hellow Server"))),
-            //     data: "Sending image: "+"helloServer.txt",
-            //     mediaName: "helloServer.txt"
-            // }
 
-            fetch( "http://localhost:3100/getImg", {
-                method: "POST",
-                credentials: "include",
-                body: JSON.stringify(dataToSent)
-            }).then((it)=>console.log("....Sent"))
+            // fetch( "http://localhost:3100/getImg", {
+            //     method: "POST",
+            //     credentials: "include",
+            //     body: JSON.stringify(dataToSent)
+            // }).then((it)=>console.log("....Sent"))
             console.log("Sending...")
         
         }

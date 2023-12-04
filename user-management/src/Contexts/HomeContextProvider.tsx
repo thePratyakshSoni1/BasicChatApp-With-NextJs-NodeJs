@@ -37,28 +37,22 @@ export default function HomeContextProvider({ children }: { children: React.Reac
             console.log("Socket already open")
         } else {
             console.log("Opening socket")
-            // if (process.env.CHAT_SOCKET_URL) {
             chatSocket?.close()
-            setSocket(new WebSocket("ws://localhost:3100/chatSocket"))
-            // }else{
-            //     throw new Error("ChatSocket URL is undefined")
-            // }
+            setSocket(new WebSocket("wss://chatappbackendservice.onrender.com/chatSocket"))
             console.log("Initing message listener...")
         }
     }
 
     const sendMessage = (recepiendId: string, msg: string) => {
         
-        /**
-         * {
+        /** {
             data: string,
             isMediaMsg: boolean,
             mediaBufferArray: Buffer/number[],
             mediaType: string,
             mediaName: string|null
             receiver: string
-        }
-         */
+        }*/
 
         if (chatSocket) {
             chatSocket.send(JSON.stringify({ receiver: recepiendId, data: msg, isMediaMsg: false, mediaType: Constants.messageMediaTypes.text, mediaName: null }))

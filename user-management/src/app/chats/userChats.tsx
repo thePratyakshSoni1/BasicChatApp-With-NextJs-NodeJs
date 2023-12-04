@@ -40,7 +40,7 @@ export default function HomePage(
                 }
             };
 
-            chatsXhttpReq.open("GET", `${processEnvs.backendUrl}${Constants.backendRoutes.peoples}`, true);
+            chatsXhttpReq.open("GET", `http://localhost:3000/api${Constants.backendRoutes.peoples}`, true);
             chatsXhttpReq.withCredentials = true;
 
             chatsXhttpReq.send();
