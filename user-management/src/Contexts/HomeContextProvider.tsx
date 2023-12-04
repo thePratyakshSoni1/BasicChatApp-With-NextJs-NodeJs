@@ -38,7 +38,7 @@ export default function HomeContextProvider({ children }: { children: React.Reac
         } else {
             console.log("Opening socket")
             chatSocket?.close()
-            setSocket(new WebSocket("wss://chatappbackendservice.onrender.com/chatSocket"))
+            setSocket(new WebSocket("wss://chatappbackend-service.onrender.com/chatSocket"))
             console.log("Initing message listener...")
         }
     }

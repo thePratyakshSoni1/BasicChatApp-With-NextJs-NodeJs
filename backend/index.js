@@ -1,4 +1,4 @@
-const http = require("https");
+const http = require("http");
 const file = require("fs");
 
 const { setKeys, generatePrimeNums } = require("./utils/rsaGo");
