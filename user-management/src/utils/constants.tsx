@@ -15,7 +15,7 @@ const Constants = {
   backendRoutes: {
     login: "/login",
     signup: "/signup",
-    generateLoginKey: "genLoginKey",
+    generateLoginKey: "/genLoginKey",
     addUser: "/addUser",
     removeUser: "/removeUser",
     updateUser: "updateUser",
