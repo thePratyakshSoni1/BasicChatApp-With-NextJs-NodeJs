@@ -1,7 +1,5 @@
 import { NextRequest } from "next/server";
 import http from "https"
-import fs from 'fs'
-import EventEmitter from "events";
 
 function sleep(mills: number) {
     return new Promise((res, rej) => {
@@ -22,30 +20,6 @@ async function handleRequest(req: NextRequest, method: string): Promise<Response
 
         let body = ``
         body = await getBody
-
-
-        // let it = method === "GET" 
-        // ?  await fetch(`${process.env.BACKEND_URL}` + reqPath, {
-        //     headers: reqHeaders,
-        //     method: method
-        // })
-        // : await fetch(`${process.env.BACKEND_URL}` + reqPath, {
-        //     headers: reqHeaders,
-        //     method: method,
-        //     body: body
-        // })
-
-
-
-        // console.log("Resp received from render...")
-        // let resp = new Response( await it.text() )
-        // let cookieHeaders = it.headers.get("Set-Cookie")
-        // if (cookieHeaders !== null) {
-        //     console.log("Set-Cookie founded \n", cookieHeaders)
-        //     resp.headers.append("Set-Cookie", cookieHeaders)
-        // }
-
-        // return resp
 
         let parsedCookieHeader = ``
 
