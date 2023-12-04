@@ -24,7 +24,7 @@ export default async function GetServerSideProps() {
     console.log(isLoggedUser)
 
     if (isLoggedUser) {
-        let verificationResp = await verifyAutoLoginNoCache(cookies ? cookies : "", process.env.BACKEND_URL ? process.env.BACKEND_URL : "")
+        let verificationResp = await verifyAutoLoginNoCache(cookies ? cookies : "", process.env.BACKEND_URL ? process.env.BACKEND_URL : "", process.env.BACKEND_API_URL ? process.env.BACKEND_API_URL : "")
         if (verificationResp.isVerified) {
             isAuthenticated = true
         }
@@ -32,7 +32,8 @@ export default async function GetServerSideProps() {
 
     return isAuthenticated ? <HomePage 
         food={cookies === null ? "" : cookies} 
-        processEnvs={{ backendUrl: process.env.BACKEND_URL ? process.env.BACKEND_URL : "", socketUrl: process.env.FRONTEND_URL ? process.env.FRONTEND_URL : "" }} 
+        processEnvs={
+            { backendApiUrl: process.env.BACKEND_API_URL ? process.env.BACKEND_API_URL : "" }} 
     /> : redirect(Constants.frontendRoutes.login)
 
 }

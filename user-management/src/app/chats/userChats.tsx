@@ -8,7 +8,7 @@ import { useHomeContext } from "../../Contexts/HomeContextProvider"
 import Constants from "@/utils/constants"
 
 export default function HomePage(
-    {food, processEnvs}: { food: string, processEnvs: {backendUrl: string, socketUrl: string}}
+    {food, processEnvs}: { food: string, processEnvs: {backendApiUrl: string}}
     
 ) {
 
@@ -40,7 +40,7 @@ export default function HomePage(
                 }
             };
 
-            chatsXhttpReq.open("GET", `http://localhost:3000/api${Constants.backendRoutes.peoples}`, true);
+            chatsXhttpReq.open("GET", `${processEnvs.backendApiUrl}${Constants.backendRoutes.peoples}`, true);
             chatsXhttpReq.withCredentials = true;
 
             chatsXhttpReq.send();

@@ -21,7 +21,7 @@
     "requestRoutes": {
         "login": "/login",
         "signup": "/signup",
-        "generateLoginKey": "/gen-login/key",
+        "generateLoginKey": "/genLoginKey",
         "addUser": "/addUser",
         "removeUser": "/removeUser",
         "updateUser": "updateUser",

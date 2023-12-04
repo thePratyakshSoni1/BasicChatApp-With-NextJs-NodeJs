@@ -17,7 +17,6 @@ async function handleRequest(req: NextRequest, method: string): Promise<Response
     let reqPath = req.url.split("/api")[1]
     console.log("\nRoute Req on: ", reqPath)
 
-
         let body = ``
         body = await getBody
 

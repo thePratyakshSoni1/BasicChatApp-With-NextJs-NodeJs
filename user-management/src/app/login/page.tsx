@@ -1,6 +1,6 @@
 import React from "react"
 import styles from "./log2/page.module.css"
-import http from "https"
+import http from "http"
 import { generatePrimeNums, setKeys } from "../../../../backend/utils/rsaGo"
 import LoginPage from "./loginPageUi"
 import { headers } from "next/headers"
@@ -23,19 +23,16 @@ export default async function getServerSideProps() {
     console.log(isLoggedUser)
 
     if (isLoggedUser) {
-        let verificationResp = await verifyAutoLogin(cookies ? cookies : "", process.env.BACKEND_URL ? process.env.BACKEND_URL : "")
+        let verificationResp = await verifyAutoLogin(cookies ? cookies : "", process.env.BACKEND_URL ? process.env.BACKEND_URL : "", process.env.BACKEND_API_URL ? process.env.BACKEND_API_URL : "")
         if (verificationResp.isVerified) {
             isAuthenticated = true
         }
     }
 
     if (!isAuthenticated) {
-        const opts = {
-            method: "GET",
-            path:  Constants.backendRoutes.generateLoginKey
-        }
 
         try {
+            console.log("Finding on: ", `${process.env.BACKEND_API_URL}${Constants.backendRoutes.generateLoginKey}`)
             var clientRq = http.request(
                 `${process.env.BACKEND_API_URL}${Constants.backendRoutes.generateLoginKey}`,
                 (res) => {
@@ -52,7 +49,7 @@ export default async function getServerSideProps() {
             })
 
             clientRq.end()
-            let delayLimit = 10*1000 
+            let delayLimit = 20*1000 
             const sleepNow = (delay: number) => new Promise((resolve) => setTimeout(resolve, delay))
 
             const checkRequestStatus = async () => {
@@ -75,6 +72,7 @@ export default async function getServerSideProps() {
 
 
     let keyPayload = isEncRequestComplete ? JSON.parse(key) : undefined
+    console.log("ENC REQ: ", isEncRequestComplete)
     return isAuthenticated ? redirect(Constants.frontendRoutes.chats) : isEncRequestComplete ? <LoginPage
         myKeys={{ public: keyPayload.public, mod: keyPayload.mod }}
         food={req.get("cookie")}
@@ -83,7 +81,7 @@ export default async function getServerSideProps() {
                     }
         }
     /> : <div>
-        <h1>Service Unavailable</h1>
+        <h1>ENCREQ: {isEncRequestComplete} Service Unavailable</h1>
         <p>this page isn&apos;t working, please try again later</p>
         </div>
 

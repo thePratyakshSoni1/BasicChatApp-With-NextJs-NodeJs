@@ -73,14 +73,14 @@ export async function onLogin(
 }
 
 export async function onSignUp(
-    router: AppRouterInstance, mail: string, password: string, key: number, mod: number, setError: (msg: string) => void
+    router: AppRouterInstance, mail: string, password: string, key: number, mod: number, setError: (msg: string) => void, backendApiUrl: string
 ) {
     let headers = new Headers()
     let data = JSON.stringify({ mail: encryptData(mail, key, mod), password: encryptData(password, key, mod), logEncKeyWithMod: `${key}${mod}` })
     headers.append('Content-Type', 'application/json')
     headers.append('Content-Length', `${JSON.stringify(data).length}`)
 
-    const signupReq = await fetch("/api" + Constants.backendRoutes.signup, {
+    const signupReq = await fetch(backendApiUrl + Constants.backendRoutes.signup, {
         method: "POST",
         credentials: "include",
         headers: headers,
@@ -99,7 +99,8 @@ export async function onSignUp(
             password,
             resp.enKey,
             resp.mod,
-            setError
+            setError,
+            backendApiUrl
         )
     } else {
         setError(resp.msg)
@@ -108,13 +109,13 @@ export async function onSignUp(
 
 }
 
-export async function verifyAutoLogin(tokens: string, backendUrl: string) {
+export async function verifyAutoLogin(tokens: string, backendUrl: string, backendApiUrl: string) {
 
     var myHeaders = new Headers()
 
     myHeaders.append("cookie", `${tokens}`)
 
-    let req = await fetch("/api" + "/verifyLogin", {
+    let req = await fetch(backendApiUrl+"/verifyLogin", {
         credentials: "include",
         method: "GET",
         headers: myHeaders
@@ -130,13 +131,13 @@ export async function verifyAutoLogin(tokens: string, backendUrl: string) {
     return resp
 }
 
-export async function verifyAutoLoginNoCache(tokens: string, backendUrl: string) {
+export async function verifyAutoLoginNoCache(tokens: string, backendUrl: string, backendApiUrl: string) {
 
     var myHeaders = new Headers()
 
     myHeaders.append("cookie", `${tokens}`)
 
-    let req = await fetch("/api" + "/verifyLogin", {
+    let req = await fetch(backendApiUrl + "/verifyLogin", {
         credentials: "include",
         method: "GET",
         headers: myHeaders,
@@ -153,9 +154,9 @@ export async function verifyAutoLoginNoCache(tokens: string, backendUrl: string)
     return resp
 }
 
-export async function onLogout(router: AppRouterInstance, backendUrl: string) {
+export async function onLogout(router: AppRouterInstance, backendUrl: string, backendApiUrl: string) {
     var myHeaders = new Headers()
-    let logoutRequest = await fetch("/api" + "/logout", {
+    let logoutRequest = await fetch(backendApiUrl + "/logout", {
         method: "GET",
         headers: myHeaders,
         credentials: "include"

@@ -1,4 +1,6 @@
+let backendApiUrl = process.env.BACKEND_API_URL
 const Constants = {
+
   backendRouteErrorCodes: {
     DIFFERENT_KEY_ENCRYPTION: 0
   },
@@ -13,7 +15,7 @@ const Constants = {
   backendRoutes: {
     login: "/login",
     signup: "/signup",
-    generateLoginKey: "/gen-login/key",
+    generateLoginKey: "genLoginKey",
     addUser: "/addUser",
     removeUser: "/removeUser",
     updateUser: "updateUser",

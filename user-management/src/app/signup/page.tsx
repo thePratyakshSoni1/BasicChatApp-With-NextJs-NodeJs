@@ -23,7 +23,7 @@ export default async function GetServerSideProps() {
     console.log(isLoggedUser)
 
     if (isLoggedUser) {
-        let verificationResp = await verifyAutoLogin(cookies ? cookies : "", process.env.BACKEND_URL ? process.env.BACKEND_URL : "")
+        let verificationResp = await verifyAutoLogin(cookies ? cookies : "", process.env.BACKEND_URL ? process.env.BACKEND_URL : "", process.env.BACKEND_API_URL ? process.env.BACKEND_API_URL : "")
         if (verificationResp.isVerified) {
             isAuthenticated = true
         }
@@ -72,6 +72,7 @@ export default async function GetServerSideProps() {
     return isAuthenticated ? redirect(Constants.frontendRoutes.chats) : isEncRequestComplete ? <SignUpPage
         myKeys={{ public: keyPayload.public, mod: keyPayload.mod }}
         food={req.get("cookie")}
+        processEnvs={{backendApiUrl: `${process.env.BACKEND_API_URL}`}}
     /> : <div>
         <h1>Service Unavailable</h1>
         <p>this page isn&apos;t working, please try again later</p>

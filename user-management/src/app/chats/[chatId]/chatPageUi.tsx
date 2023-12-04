@@ -162,7 +162,7 @@ function AddPhotoButton({ onImageMsg }: { onImageMsg: (imgBuffer: Buffer, data: 
 }
 
 
-export default function ChatPage({ food, processEnvs }: { food: string, processEnvs: { backendUrl: string, frontendUrl: string } }) {
+export default function ChatPage({ food, processEnvs }: { food: string, processEnvs: { backendUrl: string, frontendUrl: string, backendApiUrl: string } }) {
 
 
     const chatList = React.useRef<null | HTMLElement>(null)
@@ -243,7 +243,7 @@ export default function ChatPage({ food, processEnvs }: { food: string, processE
     useEffect(() => {
 
         if (homeContext.currentReceiverId === undefined) {
-            getIdFromUserName(`${chatId}`).then((it) => {
+            getIdFromUserName(`${chatId}`, processEnvs.backendApiUrl).then((it) => {
                 homeContext.setReceiver(it)
                 console.log("Receiver hardset: ", it)
             })
@@ -320,7 +320,7 @@ export default function ChatPage({ food, processEnvs }: { food: string, processE
                             {
                                 name: "Logout", onclick: () => {
                                     homeContext.socket?.close()
-                                    onLogout(router, processEnvs.backendUrl)
+                                    onLogout(router, processEnvs.backendUrl, processEnvs.backendApiUrl)
                                 }
                             }
                         ]}
